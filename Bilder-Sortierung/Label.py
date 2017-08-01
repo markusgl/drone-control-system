@@ -1,3 +1,5 @@
+#encoding=utf-8
+
 import numpy as np
 import cv2
 import os
@@ -62,36 +64,38 @@ cv2.setMouseCallback('image', mouse_callback)
 
 #Dictonary für Dateiname,Auflösung und Positionen der Click
 imgData={}
-
+jsonData=[]
 imgCounter=0
+
 #Jedes Bild in dem Ordner wir geöffnet, Clicks werden registriert.
-#with open('data.txt','a') as outfile:
 for pic in pictures:
-
-
 
             #Click-Counter wieder nullen
             counter = 0
+
             #Bild öffnen und anzeigen
             img = cv2.imread(pic, 1)
             cv2.imshow('image', img)
-            #wartet auf irgendeine Taste oder ESC dann wird
-            #das Programm beendet
-            esc= cv2.waitKey(0)
-            if esc==27:
+
+            # wartet auf irgendeine Taste oder ESC dann wird
+            # das Programm beendet
+            esc = cv2.waitKey(0)
+            if esc == 27:
                 break
             #Äuflösung und Pfadname in Dict speichern
-            imgData[imgCounter]={
+            imgData={
                 'filename': os.path.basename(pic),
                 # Achtung, img.shape liefert Höhe x Breite x Channels
                 'resolution': img.shape,
                 'click-Positions': right_clicks
             }
-            #print(imgData)
-            imgCounter=imgCounter+1
-            right_clicks.clear()
+            print(imgData)
+            jsonData.append(imgData)
+            imgCounter+=1
+            right_clicks=[]
+
 
 with open('data.json', 'a') as outfile:
-      json.dump(imgData,outfile)
+    outfile.writelines(json.dumps(item)+ '\n' for item in jsonData)
 
 cv2.destroyAllWindows()

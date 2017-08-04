@@ -1,6 +1,7 @@
 import os
 from JSONReader import JSONReader
 import sys
+import shutil
 
 
 class PictureSorter:
@@ -30,21 +31,21 @@ class PictureSorter:
 
         self.__createCategories()
 
-
-
     # Hier werdne die Kategoriegrenzen festgelegt
     # im Moment wird nur eine Lineareverteilung unterstüzt
     def __createCategories(self):
 
         #inputs= input("Soll eine lineare Verteilung der Categoriene durchgeführt werden [j / n ]")
         inputs='j'
+
+        categorieCount = len(self.categoriesNames)
+        start = 0
+        end = 0
+
         if inputs=='j':
 
-            categorieCount= len(self.categoriesNames)
-            length= 1/categorieCount
+            length = 1 / categorieCount
 
-            start=0
-            end=0
             for categorieName in self.categoriesNames:
                 categorie={}
                 start= end
@@ -53,22 +54,34 @@ class PictureSorter:
                 categorie['end']=end
                 self.categories[categorieName]= categorie
                 print("Kategorie %s beginnt bei %f und endet bei %f" % (categorieName, start*100, end*100))
+        else:
+            for categorieName in self.categoriesNames:
+                categorie={}
+                start= end
+                inputString= input("Bitte geben Sie das Ende für die Kategorie: %s " % categorieName)
+                end=int(inputString)/100
+                categorie['begin']=start
+                categorie['end']=end
+                self.categories[categorieName]= categorie
+                print("Kategorie %s beginnt bei %f und endet bei %f" % (categorieName, start*100, end*100))
+
         print("=================================================")
         print()
-
 
     # Erstellt anhand der eingegeben Kategoriebezeichnungen Ordner im selbem
     # Pfad in dem das JSON File liegt
     def __makeDirectorys(self, path):
 
+        #erstellt standardmäßig ein noRope Ordner
+        directory = os.path.join(path, 'noRope')
+        if not os.path.exists(directory):
+            os.makedirs(directory)
         self.__askCategorieNames()
-
         for categorie in self.categoriesNames:
             directory= os.path.join(path,categorie)
 
             if not os.path.exists(directory):
                 os.makedirs(directory)
-
 
 
     def sort(self):
@@ -80,7 +93,8 @@ class PictureSorter:
             clickpositions = data['click-Positions']
 
             if not clickpositions:
-                print("no Rope")
+                self.__copyImage('noRope', pictureName)
+                print("Picture %s wird in Kategorie %s sortiert." % (pictureName, 'noRope' ))
             else:
                 firstClick = clickpositions[0]
                 secondClick = clickpositions[1]
@@ -93,7 +107,9 @@ class PictureSorter:
                     unten = firstClick
 
                 relativRopePos=oben[0]/pictureSize[1]
-                print("Picture %s wird in Kategorie %s sortiert. Seilposition gefunden bei ca. %f " % (pictureName,self.__categrorize(relativRopePos), relativRopePos*100))
+                cat=self.__categrorize(relativRopePos)
+                print("Picture %s wird in Kategorie %s sortiert. Seilposition gefunden bei ca. %f " % (pictureName,cat[1], relativRopePos*100))
+                self.__copyImage(cat,pictureName)
 
 
     # Diese Methode prüft in wechle Kategorie das jeweilige Bild eingeordnet werden soll
@@ -101,9 +117,12 @@ class PictureSorter:
         #https://stackoverflow.com/questions/3294889/iterating-over-dictionaries-using-for-loops
         for key, value in self.categories.items():
 
-            if position > value['begin'] and position < value['end']:
+            if position >= value['begin'] and position < value['end']:
                 return key
 
+    def __copyImage(self, category,picture):
 
-
-
+        copyFrom = os.path.join(self.path, picture)
+        tmp = os.path.join(self.path, category)
+        copyTo=os.path.join(tmp, picture)
+        shutil.copy2(copyFrom,copyTo)

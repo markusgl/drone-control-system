@@ -8,16 +8,15 @@ import ctypes
 
 
 #File Dialog
-from tkinter.filedialog import askdirectory
-filename = askdirectory();
+from Tkinter import *
+import Tkinter, Tkconstants, tkFileDialog
 
-user32 = ctypes.windll.user32
-screen_res = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
+filename = tkFileDialog.askdirectory()
 
 #Set new Window Size
 def setSize():
-    new_width = screen_res[0] *0.5
-    new_height = screen_res[1] *0.5
+    new_width = 1000
+    new_height = 800
     print(new_height, new_height)
     window_width = int(new_width)
     window_height =int(new_height)
@@ -26,7 +25,7 @@ def setSize():
     return
 
 #Fenstergröße zum Anzeigen der Bilder auf halbe Bildschirmgröße
-setSize()
+
 
 
 #Alle jpg Files in dem gewählten Verzeichnis suchen
@@ -61,7 +60,7 @@ cv2.namedWindow('image', cv2.WINDOW_NORMAL)
 #set mouse callback function for window
 cv2.setMouseCallback('image', mouse_callback)
 
-
+setSize()
 #Dictonary für Dateiname,Auflösung und Positionen der Click
 imgData={}
 jsonData=[]

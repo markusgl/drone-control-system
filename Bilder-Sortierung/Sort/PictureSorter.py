@@ -35,8 +35,8 @@ class PictureSorter:
     # im Moment wird nur eine Lineareverteilung unterstüzt
     def __createCategories(self):
 
-        #inputs= input("Soll eine lineare Verteilung der Categoriene durchgeführt werden [j / n ]")
-        inputs='j'
+        inputs= input("Soll eine lineare Verteilung der Categoriene durchgeführt werden [j / n ]")
+        #inputs='j'
 
         categorieCount = len(self.categoriesNames)
         start = 0
@@ -58,7 +58,7 @@ class PictureSorter:
             for categorieName in self.categoriesNames:
                 categorie={}
                 start= end
-                inputString= input("Bitte geben Sie das Ende für die Kategorie: %s " % categorieName)
+                inputString= input("Bitte geben Sie das Ende für die Kategorie %s ein:  " % categorieName)
                 end=int(inputString)/100
                 categorie['begin']=start
                 categorie['end']=end
@@ -82,7 +82,6 @@ class PictureSorter:
 
             if not os.path.exists(directory):
                 os.makedirs(directory)
-
 
     def sort(self):
 
@@ -111,7 +110,6 @@ class PictureSorter:
                 print("Picture %s wird in Kategorie %s sortiert. Seilposition gefunden bei ca. %f " % (pictureName,cat[1], relativRopePos*100))
                 self.__copyImage(cat,pictureName)
 
-
     # Diese Methode prüft in wechle Kategorie das jeweilige Bild eingeordnet werden soll
     def __categrorize(self, position):
         #https://stackoverflow.com/questions/3294889/iterating-over-dictionaries-using-for-loops
@@ -120,6 +118,7 @@ class PictureSorter:
             if position >= value['begin'] and position < value['end']:
                 return key
 
+    #kopiert die Bilder in den Ordner der jeweiligen Kategorie
     def __copyImage(self, category,picture):
 
         copyFrom = os.path.join(self.path, picture)

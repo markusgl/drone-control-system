@@ -94,7 +94,7 @@ class PictureSorter:
             if not clickpositions:
                 self.__copyImage('noRope', pictureName)
                 print("Picture %s wird in Kategorie %s sortiert." % (pictureName, 'noRope' ))
-            else:
+            elif len(clickpositions)==2:
                 firstClick = clickpositions[0]
                 secondClick = clickpositions[1]
 
@@ -109,6 +109,18 @@ class PictureSorter:
                 cat=self.__categrorize(relativRopePos)
                 print("Picture %s wird in Kategorie %s sortiert. Seilposition gefunden bei ca. %f " % (pictureName,cat[1], relativRopePos*100))
                 self.__copyImage(cat,pictureName)
+
+            elif len(clickpositions)==1:
+                firstClick = clickpositions[0]
+
+                if firstClick[1] < 50:
+                    oben = firstClick
+
+                relativRopePos = oben[0] / pictureSize[1]
+                cat = self.__categrorize(relativRopePos)
+                print("Picture %s wird in Kategorie %s sortiert. Seilposition gefunden bei ca. %f " % (
+                pictureName, cat[1], relativRopePos * 100))
+                self.__copyImage(cat, pictureName)
 
     # Diese Methode prüft in wechle Kategorie das jeweilige Bild eingeordnet werden soll
     def __categrorize(self, position):

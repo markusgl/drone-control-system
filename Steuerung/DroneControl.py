@@ -9,6 +9,8 @@ from bebop_msgs.msg import Ardrone3PilotingStateAltitudeChanged
 
 steeringActive = False
 topReached = False
+readyToFly = False
+tookOff = False
 lastSteeringCommandY = 0.0
 lastSteeringCommandZ = 0.0
 landingInitialized = False
@@ -20,6 +22,7 @@ def initialize():
 	rospy.init_node("droneControl", anonymous=True)
 	global takeoffPub
 	takeoffPub = rospy.Publisher("/bebop/takeoff", Empty, queue_size=10)
+	global readyToFlySub
 	readyToFlySub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/FlyingStateChanged", Ardrone3PilotingStateFlyingStateChanged, isReadyToFly)
 	global landingPub
 	landingPub = rospy.Publisher("/bebop/land", Empty, queue_size=10)
@@ -28,19 +31,21 @@ def initialize():
 	takeoff()
 
 def takeoff():
-	tookOff = False
+	global tookOff, takeoffPub, takeoffSub, steeringActive, readyToFly
 	takeoffSub = rospy.Subscriber("/bebop/takeoff", Empty, setTookOff)
 	while tookOff == False:
 		takeoffPub.publish(emptyMsg)
 		print("Probiere Takeoff") #DEBUG
+		time.sleep(3)
 	print("Takeoff") #DEBUG
 	takeoffSub.unregister()
-	while isReadyToFly() == False:
-		time.sleep(3)
+	while readyToFly == False:
+		time.sleep(1)
 	steeringActive = True
 	fly()
 
-def setTookOff(tookOff):
+def setTookOff(msg):
+	global tookOff
 	tookOff = True
 
 """
@@ -105,8 +110,10 @@ def flyToNextPosition(ropePosition):
 		print(twistMsg) #DEBUG
 	
 def isReadyToFly(msg):
-	if msg.state == 1: return False
-	elif msg.state == 2: return True
+	print("Test") #DEBUG
+	print(msg.state) #DEUBG
+	if msg.state == 1: readyToFly = False
+	elif msg.state == 2: readyToFly = True
 	else: print("Fehler, Drohne nicht im Startmodus!") #TODO: Sicherheitsregel, falls Drohne nicht im Takeoff
 	
 def checkForLanding(msg):
@@ -114,6 +121,7 @@ def checkForLanding(msg):
 		land()
 
 def land():
+	global landingPub
 	landingInitialized = True
 	landingPub.publish(emptyMsg)
 	print("Land")

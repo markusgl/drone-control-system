@@ -4,42 +4,49 @@ import rospy
 import time
 import bebop_driver
 from std_msgs.msg import Empty
+from std_msgs.msg import Bool
 from bebop_msgs.msg import Ardrone3PilotingStateFlyingStateChanged
 from bebop_msgs.msg import Ardrone3PilotingStateAltitudeChanged
+from geometry_msgs.msg import Twist
 
 class DroneControl:
 
 	steeringActive = False
-	topReached = True #DEBUG, EIGENTLICH FALSE
-	readyToFly = False
+	topReached = False
+	hovering = False
 	tookOff = False
 	lastSteeringCommandY = 0.0
 	lastSteeringCommandZ = 0.0
+	lastDirection = 1
 	landingInitialized = False
 	isLanding = False
 		
 	def __init__(self):
-		print("Initialize") #DEBUG
+		print("Initialize")
 		self.emptyMsg = Empty()
 		rospy.init_node("droneControl", anonymous=True)
 		self.takeoffPub = rospy.Publisher("/bebop/takeoff", Empty, queue_size=10)
 		self.readyToFlySub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/FlyingStateChanged", Ardrone3PilotingStateFlyingStateChanged, self.isReadyToFly)
+		self.flyingPub = rospy.Publisher("/bebop/cmd_vel", Twist, queue_size = 15)
 		self.landingPub = rospy.Publisher("/bebop/land", Empty, queue_size=10)
 		self.readyToLandSub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/AltitudeChanged", Ardrone3PilotingStateAltitudeChanged, self.checkForLanding)
 		self.landingSub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/FlyingStateChanged", Ardrone3PilotingStateFlyingStateChanged, self.isItLanding)
+		self.homecomingPub = rospy.Publisher("bebop/autoflight/navigate_home", Bool, queue_size=10)
 		self.takeoff()
 
 	def takeoff(self):
 		self.takeoffSub = rospy.Subscriber("/bebop/takeoff", Empty, self.setTookOff)
 		while self.tookOff == False:
 			self.takeoffPub.publish(self.emptyMsg)
-			print("Try Takeoff") #DEBUG
+			print("Try Takeoff")
 			time.sleep(3)
-		print("Start Takeoff") #DEBUG
+		print("Start Takeoff")
 		self.takeoffSub.unregister()
-		while self.readyToFly == False:
+		while self.hovering == False:
 			time.sleep(1)
 		self.steeringActive = True
+		self.readyToFlySub.unregister()
+		self.hovering = False
 		self.fly()
 
 	def setTookOff(self,msg):
@@ -56,9 +63,8 @@ class DroneControl:
 	7 -> No rope detected
 	"""
 	def fly(self):
-		self.flyingPub = rospy.Publisher("/bebop/cmd_vel", geometry_msgs/Twist, queue_size = 15)
 		if self.steeringActive:
-			self.flyToNextPosition(lastDirection)		
+			self.flyToNextPosition(self.lastDirection)		
 
 	def flyToNextPosition(self, ropePosition):
 		if self.steeringActive and self.landingInitialized == False:
@@ -81,8 +87,8 @@ class DroneControl:
 				self.lastDirection = 4
 			elif ropePosition == 5:
 				twistMsg.linear.y = -0.75
-				lastSteeringCommandY = -0.75
-				lastDirection = 5
+				self.lastSteeringCommandY = -0.75
+				self.lastDirection = 5
 			elif ropePosition == 6:
 				self.topReached = True
 				twistMsg.linear.y = 0.0
@@ -106,15 +112,12 @@ class DroneControl:
 			print(twistMsg) #DEBUG
 		
 	def isReadyToFly(self, msg):
-		print("Test") #DEBUG
-		print(msg.state) #DEUBG
-		if msg.state == 1: self.readyToFly = False
-		if msg.state == 2: self.readyToFly = True
+		if msg.state == 1: self.hovering = False
+		if msg.state == 2: self.hovering = True
 		else: print("Fehler, Drohne nicht im Startmodus!") #TODO: Sicherheitsregel, falls Drohne nicht im Takeoff
 		
 	def checkForLanding(self, msg):
-		if self.topReached and self.readyToFly:  #readyToFly wieder raus!
-						#and msg.altitude <= 1.5
+		if self.topReached and msg.altitude <= 1.5:
 			self.land()
 			print("Init Landing Method")
 
@@ -128,3 +131,15 @@ class DroneControl:
 	
 	def isItLanding(self, msg):
 		if msg.state == 4: self.isLanding = True
+		
+	#emergency method forces the drone to come home	
+	def returnHome(self):
+		self.landAfterHomecomingSub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/FlyingStateChanged", Ardrone3PilotingStateFlyingStateChanged, self.landAtHome)
+		boolMsg = Bool(True)
+		self.flyingPub = None
+		self.homecomingPub.publish(boolMsg)
+		print("Returning home")
+		
+	#landing after returnHome-Method	
+	def landAtHome(self, msg):
+		if msg.state==2: self.land()

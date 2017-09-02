@@ -3,13 +3,18 @@
 from Tkinter import *
 from DroneControl import DroneControl
 
+#Uses Tkinter to create a simple UI with buttons
 class App:
 	def __init__(self, master):
-		droneControl = DroneControl()
-		frame = Frame(master)
-		frame.pack()
-		self.button = Button(frame, text="Return Home", command = droneControl.returnHome)
-		self.button.pack()
+		self.frame = Frame(master)
+		self.frame.pack()
+		self.startButton = Button(self.frame, text="Start Drone", command = self.initDrone)
+		self.startButton.pack()
+		
+	def initDrone(self):
+		self.droneControl = DroneControl()
+		self.homeButton = Button(self.frame, text="Return Home", command = self.droneControl.returnHome)
+		self.homeButton.pack()
 
 root = Tk()
 app = App(root)

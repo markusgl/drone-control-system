@@ -17,7 +17,7 @@ class DroneControl:
 	tookOff = False
 	lastSteeringCommandY = 0.0
 	lastSteeringCommandZ = 0.0
-	lastDirection = 1
+	lastDirection = 3
 	landingInitialized = False
 	isLanding = False
 		
@@ -42,7 +42,7 @@ class DroneControl:
 			time.sleep(3)
 		print("Start Takeoff")
 		self.takeoffSub.unregister()
-		while self.hovering == False:
+		while self.hovering == False:	#waits for the takeoff to be terminated
 			time.sleep(1)
 		self.steeringActive = True
 		self.readyToFlySub.unregister()
@@ -66,6 +66,7 @@ class DroneControl:
 		if self.steeringActive:
 			self.flyToNextPosition(self.lastDirection)		
 
+	# method called when a frame is rendered and the rope position is determined
 	def flyToNextPosition(self, ropePosition):
 		if self.steeringActive and self.landingInitialized == False:
 			twistMsg = Twist()
@@ -114,7 +115,6 @@ class DroneControl:
 	def isReadyToFly(self, msg):
 		if msg.state == 1: self.hovering = False
 		if msg.state == 2: self.hovering = True
-		else: print("Fehler, Drohne nicht im Startmodus!") #TODO: Sicherheitsregel, falls Drohne nicht im Takeoff
 		
 	def checkForLanding(self, msg):
 		if self.topReached and msg.altitude <= 1.5:

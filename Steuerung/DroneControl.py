@@ -3,6 +3,7 @@
 import rospy
 import time
 import bebop_driver
+import logging
 from std_msgs.msg import Empty
 from std_msgs.msg import Bool
 from bebop_msgs.msg import Ardrone3PilotingStateFlyingStateChanged
@@ -22,7 +23,7 @@ class DroneControl:
 	isLanding = False
 		
 	def __init__(self):
-		print("Initialize")
+		logging.info("Initialize")
 		self.emptyMsg = Empty()
 		rospy.init_node("droneControl", anonymous=True)
 		self.takeoffPub = rospy.Publisher("/bebop/takeoff", Empty, queue_size=10)
@@ -38,9 +39,9 @@ class DroneControl:
 		self.takeoffSub = rospy.Subscriber("/bebop/takeoff", Empty, self.setTookOff)
 		while self.tookOff == False:
 			self.takeoffPub.publish(self.emptyMsg)
-			print("Try Takeoff")
+			loggin.info("Try Takeoff")
 			time.sleep(3)
-		print("Start Takeoff")
+		logging.info("Start Takeoff")
 		self.takeoffSub.unregister()
 		while self.hovering == False:	#waits for the takeoff to be terminated
 			time.sleep(1)
@@ -110,7 +111,7 @@ class DroneControl:
 				twistMsg.linear.z = 0.0
 				
 			self.flyingPub.publish(twistMsg)	
-			print(twistMsg) #DEBUG
+			logging.debug("Flying in direction: " + twistMsg) #DEBUG
 		
 	def isReadyToFly(self, msg):
 		if msg.state == 1: self.hovering = False
@@ -119,15 +120,15 @@ class DroneControl:
 	def checkForLanding(self, msg):
 		if self.topReached and msg.altitude <= 1.5:
 			self.land()
-			print("Init Landing Method")
+			logging.info("Init Landing Method")
 
 	def land(self):
 		self.landingInitialized = True
 		while self.isLanding == False:
 			self.landingPub.publish(self.emptyMsg)
 			time.sleep(1)
-			print("Probier mer halt amol zu landen!")
-		print("Land")
+			logging.info("Probier mer halt amol zu landen!")
+		logging.info("Land")
 	
 	def isItLanding(self, msg):
 		if msg.state == 4: self.isLanding = True
@@ -138,7 +139,7 @@ class DroneControl:
 		boolMsg = Bool(True)
 		self.flyingPub = None
 		self.homecomingPub.publish(boolMsg)
-		print("Returning home")
+		logging.info("Returning home")
 		
 	#landing after returnHome-Method	
 	def landAtHome(self, msg):

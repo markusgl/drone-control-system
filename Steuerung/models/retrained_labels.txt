@@ -1,6 +1,0 @@
-links
-rechts
-halbrechts
-halblinks
-mitte
-norope

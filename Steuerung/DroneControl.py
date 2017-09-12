@@ -23,9 +23,9 @@ class DroneControl:
 	isLanding = False
 		
 	def __init__(self):
-		logging.info("Initialize")
+		print("Initialize")
 		self.emptyMsg = Empty()
-		rospy.init_node("droneControl", anonymous=True)
+		#rospy.init_node("droneControl", anonymous=True)
 		self.takeoffPub = rospy.Publisher("/bebop/takeoff", Empty, queue_size=10)
 		self.readyToFlySub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/FlyingStateChanged", Ardrone3PilotingStateFlyingStateChanged, self.isReadyToFly)
 		self.flyingPub = rospy.Publisher("/bebop/cmd_vel", Twist, queue_size = 15)
@@ -39,9 +39,9 @@ class DroneControl:
 		self.takeoffSub = rospy.Subscriber("/bebop/takeoff", Empty, self.setTookOff)
 		while self.tookOff == False:
 			self.takeoffPub.publish(self.emptyMsg)
-			loggin.info("Try Takeoff")
+			print("Try Takeoff")
 			time.sleep(3)
-		logging.info("Start Takeoff")
+		print("Start Takeoff")
 		self.takeoffSub.unregister()
 		while self.hovering == False:	#waits for the takeoff to be terminated
 			time.sleep(1)
@@ -111,7 +111,7 @@ class DroneControl:
 				twistMsg.linear.z = 0.0
 				
 			self.flyingPub.publish(twistMsg)	
-			logging.debug("Flying in direction: " + twistMsg) #DEBUG
+			print(twistMsg) #DEBUG
 		
 	def isReadyToFly(self, msg):
 		if msg.state == 1: self.hovering = False
@@ -120,15 +120,15 @@ class DroneControl:
 	def checkForLanding(self, msg):
 		if self.topReached and msg.altitude <= 1.5:
 			self.land()
-			logging.info("Init Landing Method")
+			print("Init Landing Method")
 
 	def land(self):
 		self.landingInitialized = True
 		while self.isLanding == False:
 			self.landingPub.publish(self.emptyMsg)
 			time.sleep(1)
-			logging.info("Probier mer halt amol zu landen!")
-		logging.info("Land")
+			print("Probier mer halt amol zu landen!")
+		print("Land")
 	
 	def isItLanding(self, msg):
 		if msg.state == 4: self.isLanding = True
@@ -139,7 +139,7 @@ class DroneControl:
 		boolMsg = Bool(True)
 		self.flyingPub = None
 		self.homecomingPub.publish(boolMsg)
-		logging.info("Returning home")
+		print("Returning home")
 		
 	#landing after returnHome-Method	
 	def landAtHome(self, msg):

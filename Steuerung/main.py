@@ -45,6 +45,7 @@ def main():
 	rospy.init_node('ropeRecognition', anonymous=True)
 	root = Tk()
 	app = App(root)
+	rnn.load_graph() # load tf model once at startup
 	#TODO: Parallelisieren!
 	root.mainloop() 
 	handleDrone()

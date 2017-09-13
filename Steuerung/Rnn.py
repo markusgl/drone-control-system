@@ -25,9 +25,9 @@ def load_image(filename):
 def load_labels(filename):
   return [line.rstrip() for line in tf.gfile.GFile(filename)]
 
-def load_graph(filename):
+def load_graph():
   """Unpersists graph from file as default graph."""
-  with tf.gfile.FastGFile(filename, 'rb') as f:
+  with tf.gfile.FastGFile(graph_directory, 'rb') as f:
     graph_def = tf.GraphDef()
     graph_def.ParseFromString(f.read())
     tf.import_graph_def(graph_def, name='')
@@ -46,8 +46,7 @@ def direction_to_number(arg):
 
 # arg: binary image file
 # return: integer value of tf class
-def getRopePosition(image):
-    load_graph(graph_directory) #TODO load only once, not on every method call
+def getRopePosition(image): #TODO speed up the image classification
     with tf.Session() as sess:
         softmax_tensor = sess.graph.get_tensor_by_name(output_layer)
         labels = load_labels(label_directory)

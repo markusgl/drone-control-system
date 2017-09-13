@@ -9,6 +9,7 @@ from sensor_msgs.msg import Image as rosimg
 from cv_bridge import CvBridge, CvBridgeError
 from DroneControl import DroneControl
 from Tkinter import *
+from multiprocessing import Process
 
 
 bridge = CvBridge()
@@ -33,10 +34,7 @@ def handleDrone():
 	global app
 	#if drone is started:
 	print("Handling Drone")
-	while app.flying_started == False:
-		time.sleep(1)
 	rospy.Subscriber('/bebop/image_raw', rosimg, forwardImage)
-	print("what")
 	rospy.spin() #keep alive
     
 def main():
@@ -47,13 +45,17 @@ def main():
 	app = App(root)
 	rnn.load_graph() # load tf model once at startup
 	#TODO: Parallelisieren!
-	root.mainloop() 
-	handleDrone()
-	
+	controlDrone = Process(target=root.mainloop)
+	controlDrone.start()
+	time.sleep(10)
+	image_forwarding = Process(target=handleDrone)
+	image_forwarding.start()
+		
 	
 class App:
 	def __init__(self, master):
 		self.flying_started = False
+		self.dronecontrol = None
 		self.frame = Frame(master)
 		self.frame.pack()
 		self.startButton = Button(self.frame, text="Start Drone", command = self.initDrone)

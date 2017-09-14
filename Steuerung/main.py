@@ -67,6 +67,7 @@ class App:
 		self.homeButton = Button(self.frame, text="Return Home", command = self.dronecontrol.returnHome)
 		self.homeButton.pack()
 
-main()
+if __name__ == "__main__":
+	main() 	
 
 

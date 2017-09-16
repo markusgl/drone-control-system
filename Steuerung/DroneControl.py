@@ -98,7 +98,7 @@ class DroneControl:
 				twistMsg.linear.z = 0
 				self.steeringActive = False
 			elif ropePosition == 7:
-				twistMsg.linear.y = -1.0 * (lastSteeringCommandY)
+				twistMsg.linear.y = -1.0 * (self.lastSteeringCommandY)
 				self.lastSteeringCommandY = twistMsg.linear.y
 			
 			if self.topReached == False and ropePosition != 7:

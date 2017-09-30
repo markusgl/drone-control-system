@@ -1,0 +1,13 @@
+Zum starten der Applikation:
+
+1.Sofern nicht schon getan muss der Treiber installiert werden. Dazu in einem neuen Terminal folgende Befehle ausführen:
+	$ chomod +x install_bebop_driver.sh #Install-Skript ausführbar machen (wenn nicht schon geschehen)
+	$ ./install_bebop_driver.sh #installieren des Treibers
+
+2. Zum starten der Applikation:
+	$ chmod +x start.sh #Start-Skript ausführbar machen
+	$ ./start.sh #Starten des Treibers und der Applikation
+	--> Der Treiber wird als erstes gestartet und die Applikation 2 Sekunden (starten des Servers)
+3. Button "Start Drone" klicken -> Drohne hebt ab und geht in Flugmodus
+4. Button "Return Home" erscheint, wenn Dohne gestartet ist. Mit diesem Button wird der Flug unterbrochen und die Drohne fliegt selbstständig zu ihrem Abflugort und landet
+ 

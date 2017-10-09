@@ -12,20 +12,20 @@ from Tkinter import *
 from PIL import ImageTk, Image
 from multiprocessing import Process
 import json
-
 	
 class App:
-	def __init__(self, master):
-		self.master = master
+	def __init__(self, root):
+		self.root = root
 		self.dronecontrol = None
 		self.bridge = CvBridge()
 		self.count = 0
 		self.classifier = Classify("models/retrained_labels.txt", "models/retrained_graph.pb", 'DecodeJpeg/contents:0','final_result:0')
-		self.frame = Frame(master)
+		self.frame = Frame(self.root)
 		self.frame.pack()
 		self.startButton = Button(self.frame, text="Start Drone", command = self.initDrone)
 		self.startButton.pack()
-		
+		self.canvas = Canvas(self.root, width = 400, height = 300)
+		self.canvas.pack()
 		
 	def initDrone(self):
 		self.dronecontrol = DroneControl()
@@ -84,10 +84,9 @@ class App:
 			currentFrame = 'currentFrame.jpg'
 			cv2.imwrite(currentFrame, cv2_img)
 		
-		img = ImageTk.PhotoImage(Image.open(currentFrame))
-		panel = Label(self.master, image = img)
-		panel.pack(side = "bottom", fill = "both", expand = "yes")
-			
+		im = Image.open(currentFrame)
+		self.canvas.image = ImageTk.PhotoImage(im)
+		self.canvas.create_image(0, 0, image = self.canvas.image, anchor = "nw")	
 		
 def main():
 	rospy.init_node('ropeRecognition', anonymous=True)

@@ -1076,7 +1076,7 @@ if __name__ == '__main__':
   parser.add_argument(
       '--image_dir',
       type=str,
-      default='/tmp/SortedImages',
+      default='/tmp/3KlassenTest',
       help='Path to folders of labeled images.'
   )
   parser.add_argument(
@@ -1115,13 +1115,13 @@ if __name__ == '__main__':
   parser.add_argument(
       '--how_many_training_steps',
       type=int,
-      default=5000,
+      default=25000,
       help='How many training steps to run before ending.'
   )
   parser.add_argument(
       '--learning_rate',
       type=float,
-      default=0.001,
+      default=0.0001,
       help='How large a learning rate to use when training.'
   )
   parser.add_argument(
@@ -1174,7 +1174,7 @@ if __name__ == '__main__':
   )
   parser.add_argument(
       '--print_misclassified_test_images',
-      default=False,
+      default=True,
       help="""\
       Whether to print out a list of all misclassified test images.\
       """,

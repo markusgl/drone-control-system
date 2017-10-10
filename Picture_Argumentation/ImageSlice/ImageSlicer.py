@@ -25,8 +25,8 @@ class ImageSlicer:
 
 
     def cropImages(self):
+        counter=0
         for picture in self.jsonData:
-            counter=0
             ori_filename = picture['filename']
             ori_img = cv2.imread(ori_filename)
             print(ori_img.shape)
@@ -38,13 +38,16 @@ class ImageSlicer:
             end=partWidth
             partCounter=0
             while partCounter<=self.imageParts-1:
-                print(counter)
                 partCounter+=1
                 crop_img = ori_img[0:imgHeight, start:end] # Crop from x, y, w, h -> 100, 200, 300, 400
                 # NOTE: its img[y: y + h, x: x + w] and *not* img[x: x + w, y: y + h]
-                cv2.imwrite('D:/tmp/new'+str(counter)+".jpg",crop_img)
+                ropePos=self.getRopePos(picture['click-Positions'])
+                pat=self.checkPos(ropePos,start,end,counter)
+                cv2.imwrite(pat,crop_img)
                 start=end+1
                 end=end+partWidth
+                counter+=1
+                print(pat)
 
     def getRopePos(self, clickPos):
         if not clickPos:
@@ -61,6 +64,15 @@ class ImageSlicer:
                 upperClickPos = secondClick
                 lowerClickPos = firstClick
         return upperClickPos[0]
+
+    def checkPos(self, ropePos, start, end, pictureCounter):
+        path="D:/tmp/"
+        if ropePos>= start and ropePos <=end:
+            return path+'Rope/RopePic-'+str(pictureCounter)+'.jpg'
+        else:
+            return path + 'noRope/noRopePic-' + str(pictureCounter) + '.jpg'
+
+
 
 
 

@@ -102,7 +102,7 @@ class Classify:
 if __name__ == '__main__':
 
     #Objekterzeugung mit Kontruktoraufruf
-    classifier = Classify("/tf/30000_InceptionV3/output_labels.txt","/tf/30000_InceptionV3/output_graph.pb",
+    classifier = Classify("/tf/Inception_5000_3Classes/output_labels.txt","/tf/Inception_5000_3Classes/output_graph.pb",
                             'DecodeJpeg/contents:0','final_result:0')
     directory= '/tmp/ValidationSet/'
     pictureArray =  os.listdir(directory)

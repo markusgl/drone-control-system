@@ -39,7 +39,7 @@ class ImageSlicer:
             partCounter=0
             while partCounter<=self.imageParts-1:
                 partCounter+=1
-                crop_img = ori_img[0:imgHeight, start:end] # Crop from x, y, w, h -> 100, 200, 300, 400
+                crop_img = ori_img[0:partWidth, start:end] # Crop from x, y, w, h -> 100, 200, 300, 400
                 # NOTE: its img[y: y + h, x: x + w] and *not* img[x: x + w, y: y + h]
                 ropePos=self.getRopePos(picture['click-Positions'])
                 pat=self.checkPos(ropePos,start,end,counter)

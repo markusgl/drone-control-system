@@ -33,9 +33,9 @@ class Videoextractor:
             ret, frame = cap.read()
 
             cv2.imwrite('bild.jpg',frame)
-            classification_text = self.direction_to_number(self.classifier.classifyAImage('bild.jpg'))
-
-            cv2.putText(frame, 'Klasse: ' + classification_text, bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
+            #classification_text = self.direction_to_number(self.classifier.classifyAImage('bild.jpg'))
+            self.direction_to_number(self.classifier.classifyAImageAtOnce('bild.jpg'))
+            cv2.putText(frame, 'Klasse: ' + "HJall", bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
             cv2.imshow('frame', frame)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):

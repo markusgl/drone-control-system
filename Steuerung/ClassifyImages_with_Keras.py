@@ -40,7 +40,7 @@ class Classify:
     arg: binary image file
     return: list
     """
-    def __getRopePosition(self, image):
+    def __getPredictImage(self, image):
 
         cv2.imshow('image', image)
         img = cv2.resize(image, (159, 160))
@@ -60,7 +60,7 @@ class Classify:
         for image in images:
             image= self.__load_image(image)
             start = time.time()
-            if self.__getRopePosition(image):
+            if self.__getPredictImage(image):
                 predictedClass=co
             else:
                 co+=1
@@ -87,6 +87,40 @@ class Classify:
                 cv2.imwrite("part"+str(partCounter)+".jpg", crop_img)
                 croptImages.append("part"+str(partCounter)+".jpg")
         return croptImages
+
+
+    def __sliceAndPredict(self, Image):
+        ori_img = cv2.imread(Image)
+        imgWidth = ori_img.shape[1]
+        imgHeight = ori_img.shape[0]
+        stopper= False
+        partWidth=159
+        start = 0
+        end = partWidth
+        counter=0
+        arr=[]
+        while not stopper:
+            if end >imgWidth:
+                stopper=True
+                end=imgWidth
+                start=end-partWidth
+            crop_img = ori_img[0:160, start:end]
+            start+=80
+            end=start+partWidth
+            img = np.reshape(crop_img, [1, 159, 160, 3])
+            counter+=1
+            print(counter)
+            classes = self.model.predict_classes(img)
+            arr.append(classes)
+        return arr
+
+
+    def classifyAImageAtOnce(self, imagePath):
+        start = time.time()
+        array= self.__sliceAndPredict(imagePath)
+        print(array)
+        print('classify image elapsed time (sec): %s' % (time.time() - start))
+
 
 if __name__ == '__main__':
 

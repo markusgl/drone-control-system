@@ -19,7 +19,7 @@ class App:
 		self.dronecontrol = None
 		self.bridge = CvBridge()
 		self.count = 0
-		self.classifier = Classify("models/retrained_labels.txt", "models/retrained_graph.pb", 'DecodeJpeg/contents:0','final_result:0')
+		self.classifier = Classify("../models/retrained_labels.txt", "../models/retrained_graph.pb", 'DecodeJpeg/contents:0','final_result:0')
 		self.frame = Frame(self.root)
 		self.frame.pack()
 		self.startButton = Button(self.frame, text="Start Drone", command = self.initDrone)
@@ -86,7 +86,7 @@ class App:
 		
 		im = Image.open(currentFrame)
 		self.canvas.image = ImageTk.PhotoImage(im)
-		self.canvas.create_image(0, 0, image = self.canvas.image, anchor = "nw")	
+		self.canvas.create_image(0, 0, image = self.canvas.image, anchor = "nw")
 		
 def main():
 	rospy.init_node('ropeRecognition', anonymous=True)

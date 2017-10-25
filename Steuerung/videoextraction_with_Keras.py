@@ -7,19 +7,6 @@ class Videoextractor:
     def __init__(self):
         self.classifier = Classify('../models/TestModel_input159-160.h5')
 
-    # maps tensorflow classes to integer values
-    def direction_to_number(self, arg):
-        options = {1 : "links",
-                   2 : "halblinks",
-                   3 : "mitte",
-                   4 : "halbrechts",
-                   5 : "rechts",
-                   6 : "top",
-                   7 : "kein Seil",
-                   }
-        return options.get(arg, "nothing")
-
-
     def createVideo(self):
         cap = cv2.VideoCapture('D:/ropeVids/output7.mpg')
 
@@ -34,8 +21,8 @@ class Videoextractor:
 
             cv2.imwrite('bild.jpg',frame)
             #classification_text = self.direction_to_number(self.classifier.classifyAImage('bild.jpg'))
-            self.direction_to_number(self.classifier.classifyAImageAtOnce('bild.jpg'))
-            cv2.putText(frame, 'Klasse: ' + "HJall", bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
+            pos=self.classifier.classifyAImage('bild.jpg')
+            cv2.putText(frame, 'Klasse: ' + str(pos)+"%", bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
             cv2.imshow('frame', frame)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):

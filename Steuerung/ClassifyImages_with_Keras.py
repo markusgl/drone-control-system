@@ -40,7 +40,7 @@ class Classify:
     arg: binary image file
     return: list
     """
-    def __getPredictImage(self, image):
+    def __reshapeAndPredict(self, image):
 
         cv2.imshow('image', image)
         img = cv2.resize(image, (159, 160))
@@ -48,48 +48,11 @@ class Classify:
         classes = self.model.predict_classes(img)
         return classes
 
-    """
-      Call this Funtion from your Class.
-      return: integer value of tf class
-      """
-    def classifyAImage(self, imagePath):
-        start = time.time()
-        images= self.__sliceImage(imagePath,5)
-        co=1
-        predictedClass=7
-        for image in images:
-            image= self.__load_image(image)
-            start = time.time()
-            if self.__getPredictImage(image):
-                predictedClass=co
-            else:
-                co+=1
-
-        print('classify image elapsed time (sec): %s' % (time.time() - start))
-        return predictedClass
 
 
 
-    def __sliceImage(self, image, slices):
-        ori_img = cv2.imread(image)
-        imgWidth = ori_img.shape[1]
-        imgHeight = ori_img.shape[0]
-        partWidth = math.floor(imgWidth / slices)
-        start = 0
-        end = partWidth
-        partCounter = 0
-        croptImages=[]
-        while partCounter <= slices - 1:
-                partCounter += 1
-                crop_img = ori_img[0:partWidth, start:end]
-                start=end
-                end+=partWidth
-                cv2.imwrite("part"+str(partCounter)+".jpg", crop_img)
-                croptImages.append("part"+str(partCounter)+".jpg")
-        return croptImages
-
-
-    def __sliceAndPredict(self, Image):
+    def __slice(self, Image):
+        starttime=time.time()
         ori_img = cv2.imread(Image)
         imgWidth = ori_img.shape[1]
         imgHeight = ori_img.shape[0]
@@ -105,36 +68,57 @@ class Classify:
                 end=imgWidth
                 start=end-partWidth
             crop_img = ori_img[0:160, start:end]
-            start+=80
+            start+=70
             end=start+partWidth
             img = np.reshape(crop_img, [1, 159, 160, 3])
             counter+=1
-            print(counter)
-            classes = self.model.predict_classes(img)
-            arr.append(classes)
+            arr.append(img)
+        print('time for cropping (sec): %s' % (time.time() - starttime))
         return arr
 
 
-    def classifyAImageAtOnce(self, imagePath):
+    def classifyAImage(self, imagePath):
         start = time.time()
-        array= self.__sliceAndPredict(imagePath)
-        print(array)
+        slicedImagearray= self.__slice(imagePath)
+        position=self.__getRopePosition(self.__predict(slicedImagearray))
         print('classify image elapsed time (sec): %s' % (time.time() - start))
+        return position
+
+    def __predict(self,ImgArray):
+        arr=[]
+        start = time.time()
+        formerPrediction=0
+        for img in ImgArray:
+            classes = self.model.predict_classes(img)
+            arr.append(classes[0][0])
+
+            #early stop if two in following images
+            #was a rope predicted
+            if formerPrediction + classes[0][0] == 2:
+                break
+            else:
+                formerPrediction=classes[0][0]
+
+        print('time for prediction (sec): %s' % (time.time() - start))
+        return arr
+
+    def __getRopePosition(self,PredictedArray):
+        indices=[i for i, x in enumerate(PredictedArray) if x == 1]
+
+        if len(indices) ==0:
+            #for noRope predicted
+            return -1
+        else:
+            positionrelativ= ((sum(indices)/len(indices))/10)*100
+            return positionrelativ
+
 
 
 if __name__ == '__main__':
 
     #Objekterzeugung mit Kontruktoraufruf
-    classifier = Classify('/models/TestModel_input159-160.h5')
-    directory= 'G:/test/'
-    pictureArray =  os.listdir(directory)
+    classifier = Classify('../models/TestModel_input159-160.h5')
+    classifier.classifyAImageAtOnce('bild.jpg')
 
-    #For-Schleife geht alle in einem Ordner gefunden Dateien durch.
-    for image in pictureArray:
-        #Aufruf einer Methode des oben erzeugten Objekts
-        dir_number = classifier.classifyAImage(directory+image)
-        print(directory+image)
-        print("Prediction: " + dir_number)
-        print()
 
 

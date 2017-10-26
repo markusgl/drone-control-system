@@ -14,6 +14,9 @@ from multiprocessing import Process
 import json
 	
 class App:
+	
+	isSleeping = False
+	
 	def __init__(self, root):
 		self.root = root
 		self.dronecontrol = None
@@ -74,19 +77,23 @@ class App:
 	
 	#displays the livestream on the GUI
 	def streamVideo(self, streamFrame):
-		try:
-			#decode image
-			cv2_img = self.bridge.imgmsg_to_cv2(streamFrame, 'bgr8')
-		except CvBridgeError, e:
-			print(e)
-		else:	
-			#save image
-			currentFrame = 'currentFrame.jpg'
-			cv2.imwrite(currentFrame, cv2_img)
-		
-		im = Image.open(currentFrame)
-		self.canvas.image = ImageTk.PhotoImage(im)
-		self.canvas.create_image(0, 0, image = self.canvas.image, anchor = "nw")
+		if self.isSleeping == False :	
+			try:
+				#decode image
+				cv2_img = self.bridge.imgmsg_to_cv2(streamFrame, 'bgr8')
+			except CvBridgeError, e:
+				print(e)
+			else:	
+				#save image
+				currentFrame = 'currentFrame.jpg'
+				cv2.imwrite(currentFrame, cv2_img)
+			
+			im = Image.open(currentFrame)
+			self.canvas.image = ImageTk.PhotoImage(im)
+			self.canvas.create_image(0, 0, image = self.canvas.image, anchor = "nw")
+			self.isSleeping = True
+			time.sleep(0.05)
+			self.isSleeping = False
 		
 def main():
 	rospy.init_node('ropeRecognition', anonymous=True)

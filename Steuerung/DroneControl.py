@@ -25,14 +25,17 @@ class DroneControl:
 	def __init__(self):
 		print("Initialize")
 		self.emptyMsg = Empty()
-		#rospy.init_node("droneControl", anonymous=True)
-		self.takeoffPub = rospy.Publisher("/bebop/takeoff", Empty, queue_size=10)
-		self.readyToFlySub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/FlyingStateChanged", Ardrone3PilotingStateFlyingStateChanged, self.isReadyToFly)
-		self.flyingPub = rospy.Publisher("/bebop/cmd_vel", Twist, queue_size = 15)
-		self.landingPub = rospy.Publisher("/bebop/land", Empty, queue_size=10)
-		self.readyToLandSub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/AltitudeChanged", Ardrone3PilotingStateAltitudeChanged, self.checkForLanding)
-		self.landingSub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/FlyingStateChanged", Ardrone3PilotingStateFlyingStateChanged, self.isItLanding)
-		self.homecomingPub = rospy.Publisher("bebop/autoflight/navigate_home", Bool, queue_size=10)
+		self.takeoffPub = rospy.Publisher("/bebop/takeoff", Empty, queue_size = 10) 						#Publisher for takeoff
+		self.readyToFlySub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/FlyingStateChanged",
+		 Ardrone3PilotingStateFlyingStateChanged, self.isReadyToFly)										#Subscriber that checks if drone is ready to fly
+		self.flyingPub = rospy.Publisher("/bebop/cmd_vel", Twist, queue_size = 15)							#Publisher for flying
+		self.landingPub = rospy.Publisher("/bebop/land", Empty, queue_size = 10)							#Publisher for landing
+		self.readyToLandSub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/AltitudeChanged",
+		 Ardrone3PilotingStateAltitudeChanged, self.checkForLanding)										#Subscriber that checks is landing can be started
+		self.landingSub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/FlyingStateChanged",
+		 Ardrone3PilotingStateFlyingStateChanged, self.setIfLanding)										#Subscriber that checks if the drone is landing
+		self.homecomingPub = rospy.Publisher("bebop/autoflight/navigate_home", Bool, queue_size = 10)		#Publisher for the return home mission
+		self.snapshotPub = rospy.Publisher("/bebop/snapshot", Empty, queue_size = 10)						#Publisher for taking Pictures
 		self.takeoff()
 
 	def takeoff(self):
@@ -102,6 +105,8 @@ class DroneControl:
 				self.lastSteeringCommandY = twistMsg.linear.y
 			
 			if self.topReached == False and ropePosition != 7:
+				if self.ropePosition == 3:
+					self.snapshotPub.Publish(self.emptyMsg)	#if the rope is in the center and the drone is on the way up take a pic
 				twistMsg.linear.z = 0.5
 				self.lastSteeringCommandZ = 0.5
 			elif ropePosition != 7:
@@ -130,7 +135,7 @@ class DroneControl:
 			print("Probier mer halt amol zu landen!")
 		print("Land")
 	
-	def isItLanding(self, msg):
+	def setIfLanding(self, msg):
 		if msg.state == 4: self.isLanding = True
 		
 	#emergency method forces the drone to come home	

@@ -27,8 +27,7 @@ class App:
 		self.frame.pack()
 		self.startButton = Button(self.frame, text="Start Drone", command = self.initDrone)
 		self.startButton.pack()
-		self.canvas = Canvas(self.root, width = 400, height = 300)
-		self.canvas.pack()
+		namedWindow( "Video Stream", WINDOW_AUTOSIZE )	# Create a window for displaying the video stream
 		
 	def initDrone(self):
 		self.dronecontrol = DroneControl()
@@ -78,19 +77,11 @@ class App:
 	#displays the livestream on the GUI
 	def streamVideo(self, streamFrame):
 		if self.isSleeping == False :	
-			try:
-				#decode image
-				cv2_img = self.bridge.imgmsg_to_cv2(streamFrame, 'bgr8')
-			except CvBridgeError, e:
-				print(e)
-			else:	
-				#save image
-				currentFrame = 'currentFrame.jpg'
-				cv2.imwrite(currentFrame, cv2_img)
+			frameMatrix = Mat(856, 480, CV_8UC1)
+			frameMatrix = imread(streamFrame, 1)
 			
-			im = Image.open(currentFrame)
-			self.canvas.image = ImageTk.PhotoImage(im)
-			self.canvas.create_image(0, 0, image = self.canvas.image, anchor = "nw")
+			imshow( "Video Stream", frameMatrix)    # load frame into the OpenCV Window
+			
 			self.isSleeping = True
 			time.sleep(0.05)
 			self.isSleeping = False

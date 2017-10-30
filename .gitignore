@@ -15,3 +15,5 @@ target
 *.userosscache
 *.sln.docstates
 .gitignore
+__pycache__/
+*.py[cod]

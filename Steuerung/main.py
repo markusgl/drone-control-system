@@ -3,6 +3,7 @@
 import rospy
 import cv2
 import time
+import rawpy as rp
 
 from ClassifiyImages import Classify
 from sensor_msgs.msg import Image as rosimg
@@ -27,7 +28,7 @@ class App:
 		self.frame.pack()
 		self.startButton = Button(self.frame, text="Start Drone", command = self.initDrone)
 		self.startButton.pack()
-		namedWindow( "Video Stream", WINDOW_AUTOSIZE )	# Create a window for displaying the video stream
+		cv2.namedWindow( "Video Stream", flags = cv2.WINDOW_AUTOSIZE )	# Create a window for displaying the video stream
 		
 	def initDrone(self):
 		self.dronecontrol = DroneControl()
@@ -77,10 +78,23 @@ class App:
 	#displays the livestream on the GUI
 	def streamVideo(self, streamFrame):
 		if self.isSleeping == False :	
-			frameMatrix = Mat(856, 480, CV_8UC1)
-			frameMatrix = imread(streamFrame, 1)
+			"""try:
+			#decode image
+				cv2_img = self.bridge.imgmsg_to_cv2(streamFrame, 'bgr8')
 			
-			imshow( "Video Stream", frameMatrix)    # load frame into the OpenCV Window
+			except CvBridgeError, e:
+				print(e)"""
+				
+			cv2.imwrite("currentFrame.jpg", streamFrame)
+			
+			#frameMatrix = cv2.imread(streamFrame, 1) 
+			rawFrame = rp.imread("currentFrame.jpg")
+			matFrame = rawFrame.postrocess()
+			#frameMatrix = np.mat(856, 480, CV_8UC1)
+			#frameMatrix = cv2.imread(streamFrame, 1)
+			
+			cv2.imshow( "Video Stream", matFrame)    # load frame into the OpenCV Window
+			print("Gemachen")
 			
 			self.isSleeping = True
 			time.sleep(0.05)

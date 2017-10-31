@@ -105,8 +105,8 @@ class DroneControl:
 				self.lastSteeringCommandY = twistMsg.linear.y
 			
 			if self.topReached == False and ropePosition != 7:
-				if self.ropePosition == 3:
-					self.snapshotPub.Publish(self.emptyMsg)	#if the rope is in the center and the drone is on the way up take a pic
+				if ropePosition == 3:
+					self.snapshotPub.publish(self.emptyMsg)	#if the rope is in the center and the drone is on the way up take a pic
 				twistMsg.linear.z = 0.5
 				self.lastSteeringCommandZ = 0.5
 			elif ropePosition != 7:

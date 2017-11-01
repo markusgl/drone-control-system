@@ -4,6 +4,7 @@ import rospy
 import cv2
 import time
 import rawpy as rp
+import numpy as np
 
 from ClassifiyImages import Classify
 from sensor_msgs.msg import Image as rosimg
@@ -78,22 +79,27 @@ class App:
 	#displays the livestream on the GUI
 	def streamVideo(self, streamFrame):
 		if self.isSleeping == False :	
-			"""try:
+			try:
 			#decode image
 				cv2_img = self.bridge.imgmsg_to_cv2(streamFrame, 'bgr8')
-			
 			except CvBridgeError, e:
-				print(e)"""
+				print(e)
 				
-			cv2.imwrite("currentFrame.jpg", streamFrame)
+			"""sf = np.matrix(streamFrame)
+			with open("currentFrame.txt", "wb") as cf:
+				for line in sf:
+					np.savetxt(cf, line)"""
+				
+			cv2.imwrite("currentFrame.jpg", cv2_img)
 			
 			#frameMatrix = cv2.imread(streamFrame, 1) 
-			rawFrame = rp.imread("currentFrame.jpg")
-			matFrame = rawFrame.postrocess()
+			#rawFrame = rp.imread("currentFrame.jpg")
+			#matFrame = rawFrame.postrocess()
 			#frameMatrix = np.mat(856, 480, CV_8UC1)
 			#frameMatrix = cv2.imread(streamFrame, 1)
+			#frameMatrix = np.loadtxt("currentFrame.txt")
 			
-			cv2.imshow( "Video Stream", matFrame)    # load frame into the OpenCV Window
+			cv2.imshow( "Video Stream", "currentFrame.jpg")    # load frame into the OpenCV Window
 			print("Gemachen")
 			
 			self.isSleeping = True

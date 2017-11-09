@@ -24,7 +24,6 @@ class Classify:
         self.__compileModel()
         print('Init/Load Grapg, Start Session elapsed time (sec): %s' % (time.time() - start))
 
-
     def __compileModel(self):
         self.model.compile(loss='binary_crossentropy',
                       optimizer='rmsprop',
@@ -48,9 +47,6 @@ class Classify:
         classes = self.model.predict_classes(img)
         return classes
 
-
-
-
     def __slice(self, Image):
         starttime=time.time()
         ori_img = cv2.imread(Image)
@@ -68,6 +64,7 @@ class Classify:
                 end=imgWidth
                 start=end-partWidth
             crop_img = ori_img[0:160, start:end]
+            #cv2.imwrite("bild"+str(counter)+".jpg", crop_img)
             start+=70
             end=start+partWidth
             img = np.reshape(crop_img, [1, 159, 160, 3])
@@ -75,7 +72,6 @@ class Classify:
             arr.append(img)
         print('time for cropping (sec): %s' % (time.time() - starttime))
         return arr
-
 
     def classifyAImage(self, imagePath):
         start = time.time()
@@ -94,17 +90,17 @@ class Classify:
 
             #early stop if two in following images
             #was a rope predicted
-            if formerPrediction + classes[0][0] == 2:
-                break
-            else:
-                formerPrediction=classes[0][0]
+            # if formerPrediction + classes[0][0] == 2:
+            #     break
+            # else:
+            #     formerPrediction=classes[0][0]
 
         print('time for prediction (sec): %s' % (time.time() - start))
         return arr
 
     def __getRopePosition(self,PredictedArray):
         indices=[i for i, x in enumerate(PredictedArray) if x == 1]
-
+        print(PredictedArray)
         if len(indices) ==0:
             #for noRope predicted
             return -1
@@ -117,8 +113,16 @@ class Classify:
 if __name__ == '__main__':
 
     #Objekterzeugung mit Kontruktoraufruf
-    classifier = Classify('../models/TestModel_input159-160.h5')
-    classifier.classifyAImageAtOnce('bild.jpg')
-
+    classifier = Classify('../models/model.h5')
+    pos= classifier.classifyAImage('Bild.jpg')
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    bottomLeftCornerOfText = (20, 400)
+    fontScale = 1
+    fontColor = (255, 255, 255)
+    lineType = 2
+    frame= cv2.imread('Bild.jpg')
+    cv2.putText(frame, 'Klasse: ' + str(pos) + "%", bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
+    cv2.imshow('frame', frame)
+    cv2.waitKey(0)
 
 

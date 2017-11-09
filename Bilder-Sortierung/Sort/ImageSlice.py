@@ -42,12 +42,12 @@ class ImageSlicer:
                 crop_img = ori_img[0:partWidth, start:end] # Crop from x, y, w, h -> 100, 200, 300, 400
                 # NOTE: its img[y: y + h, x: x + w] and *not* img[x: x + w, y: y + h]
                 ropePos=self.getRopePos(picture['click-Positions'])
-                pat=self.checkPos(ropePos,start,end,counter)
-                cv2.imwrite(pat,crop_img)
+                path=self.checkPos(ropePos,start,end,counter)
+                cv2.imwrite(path,crop_img)
                 start=end+1
                 end=end+partWidth
                 counter+=1
-                print(pat)
+                print(path)
 
     def getRopePos(self, clickPos):
         if not clickPos:
@@ -72,8 +72,39 @@ class ImageSlicer:
         else:
             return path + 'noRope/noRopePic-' + str(pictureCounter) + '.jpg'
 
+    def sliceOnlyRope(self):
+        for picture in self.jsonData:
+            ori_filename = picture['filename']
+            ori_img = cv2.imread(ori_filename)
+            print(ori_img.shape)
 
+            imgWidth = ori_img.shape[1]
+            imgHeight = ori_img.shape[0]
+            ropePos = self.getRopePos(picture['click-Positions'])
+            crop_img = ori_img[0:50, ropePos-25:ropePos+25]
+            cv2.imwrite("G:/tmp/10/"+os.path.basename(picture['filename']), crop_img)
+
+    def sliceNoRope(self):
+        files= os.listdir('G:/tmp/noRope')
+        for picture in files:
+            ori_img = cv2.imread('G:/tmp/noRope/'+picture)
+            print(ori_img.shape)
+            imgWidth = ori_img.shape[1]
+            imgHeight = ori_img.shape[0]
+            partWidth = math.floor(imgWidth / self.imageParts)
+            start=0
+            end=partWidth
+            while end < imgWidth:
+                counter=0
+                crop_img = ori_img[0:partWidth, start:end]
+                start=end
+                end=end+partWidth
+                path="G:/tmp/norope50/" + str(counter)+'_'+picture
+                cv2.imwrite(path, crop_img)
+                counter+=1
 
 if __name__ == '__main__':
     test =  ImageSlicer()
-    test.cropImages()
+    #test.cropImages()
+    #test.sliceOnlyRope()
+    test.sliceNoRope()

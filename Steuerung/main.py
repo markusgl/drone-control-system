@@ -3,6 +3,7 @@
 import rospy
 import cv2
 import time
+import ftplib
 import rawpy as rp
 
 from ClassifiyImages import Classify
@@ -20,6 +21,7 @@ class App:
 	
 	def __init__(self, root):
 		self.root = root
+		self.deleteAllSavedFilesOnDrone()
 		self.dronecontrol = None
 		self.bridge = CvBridge()
 		self.count = 0
@@ -30,9 +32,24 @@ class App:
 		self.startButton.pack()
 		cv2.namedWindow( "Video Stream", flags = cv2.WINDOW_AUTOSIZE )	# Create a window for displaying the video stream
 		
+	def deleteAllSavedFilesOnDrone(self):
+		ftp = ftplib.FTP("192.168.42.1:21")
+		path = 'internal_000/Bebop_Drone/media'
+		ftp.login("anonymous", "")
+		ftp.cwd(path)
+		#ls of all files on drone internal media
+		ls = ftp.nlst()
+		count = len(ls)
+		curr = 0
+		for filename in ls:
+			curr += 1
+			print 'Deleting file {} ... {} of {} ...'.format(filename, curr, count)
+			ftp.delete(filename)
+		ftp.quit()
+		
 	def initDrone(self):
 		self.dronecontrol = DroneControl()
-		self.homeButton = Button(self.frame, text="Return Home", command = self.writeInFile)
+		self.homeButton = Button(self.frame, text="Return Home", command = self.stitchImage)
 		self.homeButton.pack()
 		self.handleDrone()
 		self.initStream()
@@ -66,8 +83,22 @@ class App:
 		print("Handling Drone")
 		rospy.Subscriber('/bebop/image_raw', rosimg, self.forwardImage)
 	
-	def writeInFile(self):
+	def stitchImage(self):
 		self.dronecontrol.returnHome()
+		#getting all images from internal media for stitching
+		ftp = ftplib.FTP("192.168.42.1:21")
+		path = 'internal_000/Bebop_Drone/media'
+		ftp.login("anonymous", "")
+		ftp.cwd(path)
+		ls = ftp.nlst()
+		count = len(ls)
+		curr = 0
+		for filename in ls:
+			curr += 1
+			print 'Processing file {} ... {} of {} ...'.format(filename, curr, count)
+			ftp.retrbinary("RETR " + filename, open(filename, 'wb').write)
+		ftp.quit()
+		
 		with open('testPrediction.json', 'a') as outfile:
 			outfile.writelines(json.dumps(item)+ '\n' for item in self.jsonData)		
 	

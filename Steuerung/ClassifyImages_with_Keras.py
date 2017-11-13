@@ -42,8 +42,8 @@ class Classify:
     def __reshapeAndPredict(self, image):
 
         cv2.imshow('image', image)
-        img = cv2.resize(image, (159, 160))
-        img = np.reshape(img, [1, 159, 160, 3])
+        img = cv2.resize(image, (100, 100))
+        img = np.reshape(img, [1, 100, 100, 3])
         classes = self.model.predict_classes(img)
         return classes
 
@@ -53,7 +53,7 @@ class Classify:
         imgWidth = ori_img.shape[1]
         imgHeight = ori_img.shape[0]
         stopper= False
-        partWidth=159
+        partWidth=100
         start = 0
         end = partWidth
         counter=0
@@ -63,11 +63,11 @@ class Classify:
                 stopper=True
                 end=imgWidth
                 start=end-partWidth
-            crop_img = ori_img[0:160, start:end]
+            crop_img = ori_img[0:100, start:end]
             #cv2.imwrite("bild"+str(counter)+".jpg", crop_img)
             start+=70
             end=start+partWidth
-            img = np.reshape(crop_img, [1, 159, 160, 3])
+            img = np.reshape(crop_img, [1, 100, 100, 3])
             counter+=1
             arr.append(img)
         print('time for cropping (sec): %s' % (time.time() - starttime))
@@ -85,7 +85,7 @@ class Classify:
         start = time.time()
         formerPrediction=0
         for img in ImgArray:
-            classes = self.model.predict_classes(img)
+            classes = self.model.predict(img)
             arr.append(classes[0][0])
 
             #early stop if two in following images
@@ -113,7 +113,7 @@ class Classify:
 if __name__ == '__main__':
 
     #Objekterzeugung mit Kontruktoraufruf
-    classifier = Classify('../models/model.h5')
+    classifier = Classify('../models/weights.11-0.16.hdf5')
     pos= classifier.classifyAImage('Bild.jpg')
     font = cv2.FONT_HERSHEY_SIMPLEX
     bottomLeftCornerOfText = (20, 400)

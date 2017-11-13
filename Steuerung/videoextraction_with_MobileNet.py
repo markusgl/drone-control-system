@@ -7,7 +7,7 @@ class Videoextractor:
     def __init__(self):
         #self.classifier = Classify("../../Inception_10000_6600Images/output_labels.txt", "../../Inception_10000_6600Images/output_graph.pb", 'DecodeJpeg/contents:0', 'final_result:0')
         #self.classifier = Classify("../../Inception_5000_3Classes/output_labels.txt", "../../Inception_5000_3Classes/output_graph.pb", 'DecodeJpeg/contents:0', 'final_result:0')
-        self.classifier = Classify("G:\MobileNet160\output_labels.txt", "G:\MobileNet160\output_graph.pb", 'input:0', 'final_result:0')
+        self.classifier = Classify("..\models\output_labels.txt", "..\models\output_graph.pb", 'input:0', 'final_result:0')
 
     # maps tensorflow classes to integer values
     def direction_to_number(self, arg):
@@ -23,7 +23,7 @@ class Videoextractor:
 
 
     def createVideo(self):
-        cap = cv2.VideoCapture('D:\Download\hot_vids/output5.mpg')
+        cap = cv2.VideoCapture('output5.mpg')
 
         font = cv2.FONT_HERSHEY_SIMPLEX
         bottomLeftCornerOfText = (20,400)
@@ -35,8 +35,8 @@ class Videoextractor:
             ret, frame = cap.read()
 
             cv2.imwrite('bild.jpg',frame)
-            classification_text = self.direction_to_number(self.classifier.classifyAImage('bild.jpg'))
-
+            #classification_text = self.direction_to_number(self.classifier.classifyAImage('bild.jpg'))
+            classification_text = str(self.classifier.classifyAImage('bild.jpg'))
             cv2.putText(frame, 'Klasse: ' + classification_text, bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
             cv2.imshow('frame', frame)
 

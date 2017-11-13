@@ -29,8 +29,8 @@ class Classify:
         print('Init/Load Grapg, Start Session elapsed time (sec): %s' % (time.time() - start))
 
     def __load_image(self,filename):
-        return self.__read_tensor_from_image_file( filename, input_height=160,
-                                           input_width=160,
+        return self.__read_tensor_from_image_file( filename, input_height=128,
+                                           input_width=128,
                                            input_mean=0,
                                            input_std=225)
 
@@ -60,7 +60,7 @@ class Classify:
         for node_id in top_k:
             human_string = labels[node_id]
             score = predictions[node_id]
-
+            print(score)
             if (tmp < score):
                 tmp = score
                 if human_string=='rope':
@@ -92,7 +92,7 @@ class Classify:
         co=0
         predictedClass=6
         for image in images:
-            image= self.__load_image(imagePath)
+            image= self.__load_image(image)
             start = time.time()
             if self.__getRopePosition(image, self.session, self.output_layer,self.labels):
                 predictedClass=co
@@ -102,7 +102,7 @@ class Classify:
             #print('classify image elapsed time (sec): %s' % (time.time() - start))
         return predictedClass
 
-    def __read_tensor_from_image_file(self,file_name, input_height=160, input_width=160, input_mean=0, input_std=255):
+    def __read_tensor_from_image_file(self,file_name, input_height=128, input_width=128, input_mean=0, input_std=255):
 
         input_name = "file_reader"
         output_name = "normalized"
@@ -124,16 +124,19 @@ class Classify:
         ori_img = cv2.imread(image)
         imgWidth = ori_img.shape[1]
         imgHeight = ori_img.shape[0]
-        partWidth = math.floor(imgWidth / slices)
+        #partWidth = math.floor(imgWidth / slices)
+        partWidth=70
         start = 0
         end = partWidth
         partCounter = 0
         croptImages=[]
-        while partCounter <= slices - 1:
+        while end<imgWidth:
                 partCounter += 1
-                crop_img = ori_img[0:imgHeight, start:end]
+                crop_img = ori_img[0:70, start:end]
                 cv2.imwrite("part"+str(partCounter)+".jpg", crop_img)
                 croptImages.append("part"+str(partCounter)+".jpg")
+                start=end
+                end=end+partWidth
         print('slice image: %s' % (time.time() - start))
         return croptImages
 
@@ -144,17 +147,18 @@ if __name__ == '__main__':
     input_mean = 0
     input_std = 255
     #Objekterzeugung mit Kontruktoraufruf
-    classifier = Classify("G:\MobileNet160\output_labels.txt","G:\MobileNet160\output_graph.pb",
+    classifier = Classify("..\models\output_labels.txt","..\models\output_graph.pb",
                             'input:0','final_result:0')
-    directory= 'G:/test/'
-    pictureArray =  os.listdir(directory)
-
-    #For-Schleife geht alle in einem Ordner gefunden Dateien durch.
-    for image in pictureArray:
-        #Aufruf einer Methode des oben erzeugten Objekts
-        dir_number = classifier.classifyAImage(directory+image)
-        print(directory+image)
-        print("Prediction: " + dir_number)
-        print()
+    classifier.classifyAImage('part7.jpg')
+    # directory= 'G:/test/'
+    # pictureArray =  os.listdir(directory)
+    #
+    # #For-Schleife geht alle in einem Ordner gefunden Dateien durch.
+    # for image in pictureArray:
+    #     #Aufruf einer Methode des oben erzeugten Objekts
+    #     dir_number = classifier.classifyAImage(directory+image)
+    #     print(directory+image)
+    #     print("Prediction: " + dir_number)
+    #     print()
 
 

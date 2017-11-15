@@ -13,6 +13,8 @@ from DroneControl import DroneControl
 from Tkinter import *
 from PIL import ImageTk, Image
 from multiprocessing import Process
+from ImageThread import ImageThread
+from ClassifyThread import ClassifyThread
 import json
 	
 class App:
@@ -21,23 +23,23 @@ class App:
 	
 	def __init__(self, root):
 		self.root = root
-		self.dronecontrol = None
+		self.droneControl = None
 		self.bridge = CvBridge()
-		self.count = 0
 		self.classifier = Classify("../models/retrained_labels.txt", "../models/retrained_graph.pb", 'DecodeJpeg/contents:0','final_result:0')
 		self.frame = Frame(self.root)
 		self.frame.pack()
 		self.startButton = Button(self.frame, text="Start Drone", command = self.initDrone)
 		self.startButton.pack()
-		cv2.namedWindow( "Video Stream", flags = cv2.WINDOW_AUTOSIZE )	# Create a window for displaying the video stream
 		
 	def initDrone(self):
-		self.dronecontrol = DroneControl()
+		self.droneControl = DroneControl()
 		self.homeButton = Button(self.frame, text="Return Home", command = self.writeInFile)
 		self.homeButton.pack()
+		self.imageThread = ImageThread(self.droneControl, self.bridge)
+		self.jsonData=[]
+		self.classifyThread = ClassifyThread(self.droneControl, self.bridge, self.jsonData, self.classifier)
 		self.handleDrone()
 		self.initStream()
-		self.jsonData=[]
 		
 	def forwardImage(self, data):
 		dict={}
@@ -65,46 +67,16 @@ class App:
 
 	def handleDrone(self):
 		print("Handling Drone")
-		rospy.Subscriber('/bebop/image_raw', rosimg, self.forwardImage)
+		rospy.Subscriber('/bebop/image_raw', rosimg, self.classifyThread.start)
 	
 	def writeInFile(self):
-		self.dronecontrol.returnHome()
+		self.droneControl.returnHome()
 		with open('testPrediction.json', 'a') as outfile:
 			outfile.writelines(json.dumps(item)+ '\n' for item in self.jsonData)		
 	
 	def initStream(self):
 		print("Initialize video stream")
-		rospy.Subscriber("/bebop/image_raw", rosimg, self.streamVideo)
-	
-	#displays the livestream on the GUI
-	def streamVideo(self, streamFrame):
-		if self.isSleeping == False :	
-			try:
-			#decode image
-				cv2_img = self.bridge.imgmsg_to_cv2(streamFrame, 'bgr8')
-			except CvBridgeError, e:
-				print(e)
-				
-			"""sf = np.matrix(streamFrame)
-			with open("currentFrame.txt", "wb") as cf:
-				for line in sf:
-					np.savetxt(cf, line)"""
-				
-			cv2.imwrite("currentFrame.jpg", cv2_img)
-			
-			#frameMatrix = cv2.imread(streamFrame, 1) 
-			#rawFrame = rp.imread("currentFrame.jpg")
-			#matFrame = rawFrame.postrocess()
-			#frameMatrix = np.mat(856, 480, CV_8UC1)
-			#frameMatrix = cv2.imread(streamFrame, 1)
-			#frameMatrix = np.loadtxt("currentFrame.txt")
-			
-			cv2.imshow( "Video Stream", "currentFrame.jpg")    # load frame into the OpenCV Window
-			print("Gemachen")
-			
-			self.isSleeping = True
-			time.sleep(0.05)
-			self.isSleeping = False
+		rospy.Subscriber("/bebop/image_raw", rosimg, self.imageThread.start)
 		
 def main():
 	rospy.init_node('ropeRecognition', anonymous=True)

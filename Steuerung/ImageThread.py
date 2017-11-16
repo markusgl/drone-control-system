@@ -9,7 +9,7 @@ class ImageThread(threading.Thread):
 		self.bridge = bridge
 	
 	#displays the livestream on the GUI
-	def run(self, streamFrame):	
+	def streamVideo(self, streamFrame):	
 		try:
 		#decode image
 			cv2Img = self.bridge.imgmsg_to_cv2(streamFrame, 'bgr8')
@@ -19,4 +19,3 @@ class ImageThread(threading.Thread):
 		cv2.startWindowThread()		
 		cv2.imshow( "Video Stream", cv2Img)    # load frame into the OpenCV Window
 		cv2.waitKey(5)
-		self.exit()

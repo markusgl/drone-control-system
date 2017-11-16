@@ -13,8 +13,8 @@ class ClassifyThread(threading.Thread):
 		self.count = 0
 	
 	#displays the livestream on the GUI
-	def run(self, data):	
-		dict={}
+	def forwardImage(self, data):	
+		"dict={}
 		try:
 			#decode image
 			cv2Img = self.bridge.imgmsg_to_cv2(data, 'bgr8')
@@ -35,4 +35,3 @@ class ClassifyThread(threading.Thread):
 		self.jsonData.append(dict)
 	
 		time.sleep(0.05)
-		self.exit()

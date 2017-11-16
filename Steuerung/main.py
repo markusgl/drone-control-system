@@ -36,8 +36,10 @@ class App:
 		self.homeButton = Button(self.frame, text="Return Home", command = self.writeInFile)
 		self.homeButton.pack()
 		self.imageThread = ImageThread(self.droneControl, self.bridge)
+		self.imageThread.start()
 		self.jsonData=[]
 		self.classifyThread = ClassifyThread(self.droneControl, self.bridge, self.jsonData, self.classifier)
+		self.classifyThread.start()
 		self.handleDrone()
 		self.initStream()
 		
@@ -67,7 +69,7 @@ class App:
 
 	def handleDrone(self):
 		print("Handling Drone")
-		rospy.Subscriber('/bebop/image_raw', rosimg, self.classifyThread.start)
+		rospy.Subscriber('/bebop/image_raw', rosimg, self.classifyThread.forwardImage)
 	
 	def writeInFile(self):
 		self.droneControl.returnHome()
@@ -76,7 +78,7 @@ class App:
 	
 	def initStream(self):
 		print("Initialize video stream")
-		rospy.Subscriber("/bebop/image_raw", rosimg, self.imageThread.start)
+		rospy.Subscriber("/bebop/image_raw", rosimg, self.imageThread.streamVideo)
 		
 def main():
 	rospy.init_node('ropeRecognition', anonymous=True)

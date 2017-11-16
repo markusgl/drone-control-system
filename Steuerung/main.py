@@ -3,6 +3,7 @@
 import rospy
 import cv2
 import time
+import ftplib
 import rawpy as rp
 import numpy as np
 
@@ -24,12 +25,28 @@ class App:
 	def __init__(self, root):
 		self.root = root
 		self.droneControl = None
+		self.deleteAllSavedFilesOnDrone()
 		self.bridge = CvBridge()
 		self.classifier = Classify("../models/retrained_labels.txt", "../models/retrained_graph.pb", 'DecodeJpeg/contents:0','final_result:0')
 		self.frame = Frame(self.root)
 		self.frame.pack()
 		self.startButton = Button(self.frame, text="Start Drone", command = self.initDrone)
 		self.startButton.pack()
+		
+	def deleteAllSavedFilesOnDrone(self):
+		ftp = ftplib.FTP("192.168.42.1:21")
+		path = 'internal_000/Bebop_Drone/media'
+		ftp.login("anonymous", "")
+		ftp.cwd(path)
+		#ls of all files on drone internal media
+		ls = ftp.nlst()
+		count = len(ls)
+		curr = 0
+		for filename in ls:
+			curr += 1
+			print 'Deleting file {} ... {} of {} ...'.format(filename, curr, count)
+			ftp.delete(filename)
+		ftp.quit()
 		
 	def initDrone(self):
 		self.droneControl = DroneControl()
@@ -73,6 +90,22 @@ class App:
 	
 	def writeInFile(self):
 		self.droneControl.returnHome()
+	def stitchImage(self):
+		self.dronecontrol.returnHome()
+		#getting all images from internal media for stitching
+		ftp = ftplib.FTP("192.168.42.1:21")
+		path = 'internal_000/Bebop_Drone/media'
+		ftp.login("anonymous", "")
+		ftp.cwd(path)
+		ls = ftp.nlst()
+		count = len(ls)
+		curr = 0
+		for filename in ls:
+			curr += 1
+			print 'Processing file {} ... {} of {} ...'.format(filename, curr, count)
+			ftp.retrbinary("RETR " + filename, open(filename, 'wb').write)
+		ftp.quit()
+		
 		with open('testPrediction.json', 'a') as outfile:
 			outfile.writelines(json.dumps(item)+ '\n' for item in self.jsonData)		
 	

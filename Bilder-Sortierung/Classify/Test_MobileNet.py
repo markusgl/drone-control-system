@@ -14,8 +14,8 @@ import  struct
 
 import tensorflow as tf
 
-label_directory="/tf/5000_MobileNet_1.0_244/output_labels.txt"
-graph_directory="/tf/5000_MobileNet_1.0_244/output_graph.pb"
+label_directory="output_labels.txt"
+graph_directory="output_graph.pb"
 input_layer='input:0'
 output_layer= 'final_result:0'
 top_predictions=5
@@ -66,7 +66,7 @@ def run_graph(arrayofPictures, labels, input_layer_name, output_layer_name, num_
 
     return 0
 
-def read_tensor_from_image_file(file_name, input_height=299, input_width=299, input_mean=0, input_std=255):
+def read_tensor_from_image_file(file_name, input_height=128, input_width=128, input_mean=0, input_std=255):
 
   input_name = "file_reader"
   output_name = "normalized"
@@ -93,9 +93,10 @@ def read_tensor_from_image_file(file_name, input_height=299, input_width=299, in
 
 def main(argv):
 
-  for file in os.listdir(picture_directory):
-       print(file)
-       pictureArray.append(file)
+  # for file in os.listdir(picture_directory):
+  #      print(file)
+  #      pictureArray.append(file)
+  pictureArray.append('part7.jpg')
 
   # load labels
   labels = load_labels(label_directory)
@@ -107,7 +108,7 @@ def main(argv):
 
 if __name__ == '__main__':
   tf.app.run(main=main)
-  input_height = 244
-  input_width = 244
+  input_height = 128
+  input_width = 128
   input_mean = 0
   input_std = 255

@@ -7,6 +7,7 @@ import numpy as np
 import json
 import os
 import sys
+import random
 
 PY3K = sys.version_info >= (3,)
 if PY3K:
@@ -76,18 +77,25 @@ class ImageSlicer:
         for picture in self.jsonData:
             ori_filename = picture['filename']
             ori_img = cv2.imread(ori_filename)
-            print(ori_img.shape)
+            try:
+                print(ori_img.shape)
 
-            imgWidth = ori_img.shape[1]
-            imgHeight = ori_img.shape[0]
-            ropePos = self.getRopePos(picture['click-Positions'])
-            crop_img = ori_img[0:50, ropePos-25:ropePos+25]
-            cv2.imwrite("G:/tmp/10/"+os.path.basename(picture['filename']), crop_img)
+                imgWidth = ori_img.shape[1]
+                imgHeight = ori_img.shape[0]
+                ropePos = self.getRopePos(picture['click-Positions'])
+                bereich= random.randint(20,108)
+                bereich2= random.randint(30,98)
+                crop_img1 = ori_img[0:128,ropePos - bereich2:ropePos + (128-bereich2)]
+                crop_img2 = ori_img[128:256, ropePos - bereich:ropePos + (128-bereich)]
+                cv2.imwrite('D:/tmp/128-128/rope/1-'+os.path.basename(picture['filename']), crop_img1)
+                cv2.imwrite('D:/tmp/128-128/rope/2-' + os.path.basename(picture['filename']), crop_img2)
+            except:
+                print("fehler")
 
     def sliceNoRope(self):
-        files= os.listdir('G:/tmp/noRope')
+        files= os.listdir('D:/tmp/NoRope')
         for picture in files:
-            ori_img = cv2.imread('G:/tmp/noRope/'+picture)
+            ori_img = cv2.imread('D:/tmp/NoRope/'+picture)
             print(ori_img.shape)
             imgWidth = ori_img.shape[1]
             imgHeight = ori_img.shape[0]
@@ -99,7 +107,7 @@ class ImageSlicer:
                 crop_img = ori_img[0:partWidth, start:end]
                 start=end
                 end=end+partWidth
-                path="G:/tmp/norope50/" + str(counter)+'_'+picture
+                path="D:/tmp/128-128/norope" + str(counter)+'_'+picture
                 cv2.imwrite(path, crop_img)
                 counter+=1
 

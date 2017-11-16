@@ -790,6 +790,7 @@ def create_model_info(architecture):
   Raises:
     ValueError: If architecture name is unknown.
   """
+
   architecture = architecture.lower()
   if architecture == 'inception_v3':
     # pylint: disable=line-too-long
@@ -1076,7 +1077,7 @@ if __name__ == '__main__':
   parser.add_argument(
       '--image_dir',
       type=str,
-      default='/tmp/3KlassenTest',
+      default='D:/tmp/70x70',
       help='Path to folders of labeled images.'
   )
   parser.add_argument(
@@ -1115,13 +1116,13 @@ if __name__ == '__main__':
   parser.add_argument(
       '--how_many_training_steps',
       type=int,
-      default=25000,
+      default=1500,
       help='How many training steps to run before ending.'
   )
   parser.add_argument(
       '--learning_rate',
       type=float,
-      default=0.0001,
+      default=0.001,
       help='How large a learning rate to use when training.'
   )
   parser.add_argument(
@@ -1206,7 +1207,7 @@ if __name__ == '__main__':
   )
   parser.add_argument(
       '--flip_left_right',
-      default=False,
+      default=True,
       help="""\
       Whether to randomly flip half of the training images horizontally.\
       """,
@@ -1233,7 +1234,7 @@ if __name__ == '__main__':
   parser.add_argument(
       '--random_brightness',
       type=int,
-      default=0,
+      default=5,
       help="""\
       A percentage determining how much to randomly multiply the training image
       input pixels up or down by.\
@@ -1242,8 +1243,8 @@ if __name__ == '__main__':
   parser.add_argument(
       '--architecture',
       type=str,
-      default='inception_v3',
-      #default= 'mobilenet_1.0_224',
+      #default='inception_v3',
+      default= 'mobilenet_1.0_128',
       help="""\
       Which model architecture to use. 'inception_v3' is the most accurate, but
       also the slowest. For faster or smaller models, chose a MobileNet with the

@@ -6,13 +6,14 @@ Beispielhafte Verwendung am Ende des Skripts
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-
+from keras.applications.mobilenet import MobileNet
 import os
 import time
 import cv2
 import math
 from keras.models import load_model
 import numpy as np
+import keras
 
 class Classify:
 
@@ -30,7 +31,10 @@ class Classify:
                       metrics=['accuracy'])
 
     def __load_graph(self, filename):
-       return load_model(filename)
+        from keras.utils.generic_utils import CustomObjectScope
+        with CustomObjectScope({'relu6': keras.applications.mobilenet.relu6,'DepthwiseConv2D': keras.applications.mobilenet.DepthwiseConv2D}):
+            model = load_model(filename)
+        return model
 
     def __load_image(self,image):
         return cv2.imread(image)
@@ -42,8 +46,8 @@ class Classify:
     def __reshapeAndPredict(self, image):
 
         cv2.imshow('image', image)
-        img = cv2.resize(image, (100, 100))
-        img = np.reshape(img, [1, 100, 100, 3])
+        img = cv2.resize(image, (128, 128))
+        img = np.reshape(img, [1, 128, 128, 3])
         classes = self.model.predict_classes(img)
         return classes
 
@@ -53,7 +57,7 @@ class Classify:
         imgWidth = ori_img.shape[1]
         imgHeight = ori_img.shape[0]
         stopper= False
-        partWidth=100
+        partWidth=128
         start = 0
         end = partWidth
         counter=0
@@ -63,11 +67,11 @@ class Classify:
                 stopper=True
                 end=imgWidth
                 start=end-partWidth
-            crop_img = ori_img[0:100, start:end]
-            #cv2.imwrite("bild"+str(counter)+".jpg", crop_img)
-            start+=70
+            crop_img = ori_img[0:128, start:end]
+            cv2.imwrite("bild"+str(counter)+".jpg", crop_img)
+            start=end+20
             end=start+partWidth
-            img = np.reshape(crop_img, [1, 100, 100, 3])
+            img = np.reshape(crop_img, [1, 128, 128, 3])
             counter+=1
             arr.append(img)
         print('time for cropping (sec): %s' % (time.time() - starttime))
@@ -113,14 +117,14 @@ class Classify:
 if __name__ == '__main__':
 
     #Objekterzeugung mit Kontruktoraufruf
-    classifier = Classify('../models/weights.11-0.16.hdf5')
-    pos= classifier.classifyAImage('Bild.jpg')
+    classifier = Classify('../models/weights.04-0.04.hdf5')
+    pos= classifier.classifyAImage('4.jpg')
     font = cv2.FONT_HERSHEY_SIMPLEX
     bottomLeftCornerOfText = (20, 400)
     fontScale = 1
     fontColor = (255, 255, 255)
     lineType = 2
-    frame= cv2.imread('Bild.jpg')
+    frame= cv2.imread('4.jpg')
     cv2.putText(frame, 'Klasse: ' + str(pos) + "%", bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
     cv2.imshow('frame', frame)
     cv2.waitKey(0)

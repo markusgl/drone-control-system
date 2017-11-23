@@ -14,8 +14,6 @@ from DroneControl import DroneControl
 from Tkinter import *
 from PIL import ImageTk, Image
 from multiprocessing import Process
-from ImageThread import ImageThread
-from ClassifyThread import ClassifyThread
 import json
 	
 class App:
@@ -23,9 +21,10 @@ class App:
 	isSleeping = False
 	
 	def __init__(self, root):
+		self.count = 0
 		self.root = root
 		self.droneControl = None
-		self.deleteAllSavedFilesOnDrone()
+		#self.deleteAllSavedFilesOnDrone()
 		self.bridge = CvBridge()
 		self.classifier = Classify("../models/retrained_labels.txt", "../models/retrained_graph.pb", 'DecodeJpeg/contents:0','final_result:0')
 		self.frame = Frame(self.root)
@@ -52,11 +51,8 @@ class App:
 		self.droneControl = DroneControl()
 		self.homeButton = Button(self.frame, text="Return Home", command = self.writeInFile)
 		self.homeButton.pack()
-		self.imageThread = ImageThread(self.droneControl, self.bridge)
-		self.imageThread.start()
 		self.jsonData=[]
-		self.classifyThread = ClassifyThread(self.droneControl, self.bridge, self.jsonData, self.classifier)
-		self.classifyThread.start()
+		
 		self.handleDrone()
 		self.initStream()
 		
@@ -80,13 +76,12 @@ class App:
 				'pos': ropePosition}
 		self.dronecontrol.flyToNextPosition(ropePosition)
 		self.jsonData.append(dict)
-	
 
 		time.sleep(0.05)
 
 	def handleDrone(self):
 		print("Handling Drone")
-		rospy.Subscriber('/bebop/image_raw', rosimg, self.classifyThread.forwardImage)
+		rospy.Subscriber('classifyTopic', rosimg, self.forwardImage)
 	
 	def writeInFile(self):
 		self.droneControl.returnHome()
@@ -111,7 +106,43 @@ class App:
 	
 	def initStream(self):
 		print("Initialize video stream")
-		rospy.Subscriber("/bebop/image_raw", rosimg, self.imageThread.streamVideo)
+		rospy.Subscriber("/bebop/image_raw", rosimg, self.streamVideo)
+		
+	#displays the livestream on the GUI
+	def streamVideo(self, streamFrame):	
+		try:
+		#decode image
+			cv2Img = self.bridge.imgmsg_to_cv2(streamFrame, 'bgr8')
+		except CvBridgeError, e:
+			print(e)
+		
+		cv2.startWindowThread()		
+		cv2.imshow( "Video Stream", cv2Img)    # load frame into the OpenCV Window
+		cv2.waitKey(5)
+		
+	#displays the livestream on the GUI
+	def forwardImage(self, data):	
+		dict={}
+		try:
+			#decode image
+			cv2Img = self.bridge.imgmsg_to_cv2(data, 'bgr8')
+		except CvBridgeError, e:
+			print(e)
+		else:
+			#save image
+			self.count = self.count + 1
+			ropeImage = 'image' + str(self.count) + '.jpeg'
+			print("Received an image: " + ropeImage)
+		
+			cv2.imwrite(ropeImage, cv2Img)
+		ropePosition = self.classifier.classifyAImage(ropeImage)
+		print(ropePosition)
+		dict={	'img':ropeImage ,
+				'pos': ropePosition}
+		self.droneControl.flyToNextPosition(ropePosition)
+		self.jsonData.append(dict)
+		
+		time.sleep(0.05)
 		
 def main():
 	rospy.init_node('ropeRecognition', anonymous=True)

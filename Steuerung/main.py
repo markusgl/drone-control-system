@@ -4,22 +4,15 @@ import rospy
 import cv2
 import time
 import ftplib
-import rawpy as rp
-import numpy as np
+import json
 
 from ClassifiyImages import Classify
 from sensor_msgs.msg import Image as rosimg
 from cv_bridge import CvBridge, CvBridgeError
 from DroneControl import DroneControl
 from Tkinter import *
-from PIL import ImageTk, Image
-from multiprocessing import Process
-import json
 	
-class App:
-	
-	isSleeping = False
-	
+class App:	
 	def __init__(self, root):
 		self.count = 0
 		self.root = root

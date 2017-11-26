@@ -27,7 +27,8 @@ class ImageStitcher:
         # show the images
         # result = imutils.resize(result, height=600)
         stitched_img = imutils.rotate_bound(stitched_img, 270)
-        cv2.imshow("Result", stitched_img)
+        result = imutils.resize(stitched_img, width=800)
+        cv2.imshow("Result", result)
         cv2.waitKey(0)
 
     def _stitch(self, images, ratio=0.75, reprojThresh=4.0, showMatches=False):

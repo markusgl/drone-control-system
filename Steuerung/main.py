@@ -78,6 +78,7 @@ class App:
 	
 	def writeInFile(self):
 		self.droneControl.returnHome()
+		
 	def stitchImage(self):
 		self.dronecontrol.returnHome()
 		#getting all images from internal media for stitching

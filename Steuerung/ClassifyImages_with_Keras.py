@@ -53,7 +53,7 @@ class Classify:
 
     def __slice(self, Image):
         starttime=time.time()
-        ori_img = cv2.imread(Image)
+        ori_img = Image#cv2.imread(Image)
         imgWidth = ori_img.shape[1]
         imgHeight = ori_img.shape[0]
         stopper= False
@@ -68,7 +68,7 @@ class Classify:
                 end=imgWidth
                 start=end-partWidth
             crop_img = ori_img[0:128, start:end]
-            cv2.imwrite("bild"+str(counter)+".jpg", crop_img)
+            #cv2.imwrite("bild"+str(counter)+".jpg", crop_img)
             start=end+20
             end=start+partWidth
             img = np.reshape(crop_img, [1, 128, 128, 3])

@@ -21,7 +21,7 @@ class Videoextractor:
 
             cv2.imwrite('bild.jpg',frame)
             #classification_text = self.direction_to_number(self.classifier.classifyAImage('bild.jpg'))
-            pos=self.classifier.classifyAImage('bild.jpg')
+            pos=self.classifier.classifyAImage(frame)
             cv2.putText(frame, 'Klasse: ' + str(pos)+"%", bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
             cv2.imshow('frame', frame)
 

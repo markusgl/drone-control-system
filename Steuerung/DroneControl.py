@@ -108,7 +108,7 @@ class DroneControl:
 				self.lastSteeringCommandY = twistMsg.linear.y
 			
 			if self.topReached == False and ropePosition != 7:
-				if ropePosition == 3 and currentAltitude - lastAltitude >= snapshotDistance:
+				if ropePosition == 3 and self.currentAltitude - self.lastAltitude >= self.snapshotDistance:
 					self.snapshotPub.publish(self.emptyMsg)	#if the rope is in the center and the drone is on the way up take a pic
 				twistMsg.linear.z = 0.5
 				self.lastSteeringCommandZ = 0.5
@@ -131,8 +131,8 @@ class DroneControl:
 			print("Init Landing Method")
 			
 	def setAltitude(self, msg):
-		lastAltitude = currentAltitude
-		currentAltitude = msg.altitude
+		self.lastAltitude = self.currentAltitude
+		self.currentAltitude = msg.altitude
 
 	def land(self):
 		self.landingInitialized = True

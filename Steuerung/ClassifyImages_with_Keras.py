@@ -89,8 +89,8 @@ class Classify:
         start = time.time()
         formerPrediction=0
         for img in ImgArray:
-            classes = self.model.predict(img)
-            arr.append(classes[0][0])
+            classes = np.argmax( self.model.predict(img))
+            arr.append(classes)
 
             #early stop if two in following images
             #was a rope predicted
@@ -109,7 +109,7 @@ class Classify:
             #for noRope predicted
             return -1
         else:
-            positionrelativ= ((sum(indices)/len(indices))/10)*100
+            positionrelativ= (sum(indices) / len(indices))/len(PredictedArray)
             return positionrelativ
 
 
@@ -117,14 +117,14 @@ class Classify:
 if __name__ == '__main__':
 
     #Objekterzeugung mit Kontruktoraufruf
-    classifier = Classify('../models/weights.04-0.04.hdf5')
-    pos= classifier.classifyAImage('4.jpg')
+    classifier = Classify('PreTrained49-0.01.hdf5')
+    pos= classifier.classifyAImage('bild.jpg')
     font = cv2.FONT_HERSHEY_SIMPLEX
     bottomLeftCornerOfText = (20, 400)
     fontScale = 1
     fontColor = (255, 255, 255)
     lineType = 2
-    frame= cv2.imread('4.jpg')
+    frame= cv2.imread('bild.jpg')
     cv2.putText(frame, 'Klasse: ' + str(pos) + "%", bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
     cv2.imshow('frame', frame)
     cv2.waitKey(0)

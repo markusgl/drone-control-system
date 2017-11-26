@@ -2,8 +2,6 @@
 
 import rospy
 import time
-import bebop_driver
-import logging
 from std_msgs.msg import Empty
 from std_msgs.msg import Bool
 from bebop_msgs.msg import Ardrone3PilotingStateFlyingStateChanged
@@ -18,6 +16,9 @@ class DroneControl:
 	tookOff = False
 	lastSteeringCommandY = 0.0
 	lastSteeringCommandZ = 0.0
+	currentAltitude = 0.0
+	lastAltitude = 0.0
+	snapshotDistance = 1.0	#every x meters a snapshot is taken when the rope is in the center
 	lastDirection = 3
 	landingInitialized = False
 	isLanding = False
@@ -32,6 +33,8 @@ class DroneControl:
 		self.landingPub = rospy.Publisher("/bebop/land", Empty, queue_size = 10)							#Publisher for landing
 		self.readyToLandSub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/AltitudeChanged",
 		 Ardrone3PilotingStateAltitudeChanged, self.checkForLanding)										#Subscriber that checks is landing can be started
+		self.checkAltitudeSub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/AltitudeChanged",
+		 Ardrone3PilotingStateAltitudeChanged, self.setAltitude)											#Subscriber that sets the current altitude value
 		self.landingSub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/FlyingStateChanged",
 		 Ardrone3PilotingStateFlyingStateChanged, self.setIfLanding)										#Subscriber that checks if the drone is landing
 		self.homecomingPub = rospy.Publisher("bebop/autoflight/navigate_home", Bool, queue_size = 10)		#Publisher for the return home mission
@@ -105,7 +108,7 @@ class DroneControl:
 				self.lastSteeringCommandY = twistMsg.linear.y
 			
 			if self.topReached == False and ropePosition != 7:
-				if ropePosition == 3:
+				if ropePosition == 3 and self.currentAltitude - self.lastAltitude >= self.snapshotDistance:
 					self.snapshotPub.publish(self.emptyMsg)	#if the rope is in the center and the drone is on the way up take a pic
 				twistMsg.linear.z = 0.5
 				self.lastSteeringCommandZ = 0.5
@@ -126,6 +129,10 @@ class DroneControl:
 		if self.topReached and msg.altitude <= 1.5:
 			self.land()
 			print("Init Landing Method")
+			
+	def setAltitude(self, msg):
+		self.lastAltitude = self.currentAltitude
+		self.currentAltitude = msg.altitude
 
 	def land(self):
 		self.landingInitialized = True

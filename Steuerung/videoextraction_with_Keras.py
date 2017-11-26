@@ -5,10 +5,10 @@ from ClassifyImages_with_Keras import Classify
 
 class Videoextractor:
     def __init__(self):
-        self.classifier = Classify('../models/test.h5')
+        self.classifier = Classify('PreTrained49-0.01.hdf5')
 
     def createVideo(self):
-        cap = cv2.VideoCapture('G:/ropeVids/output4.mpg')
+        cap = cv2.VideoCapture('output5.mpg')
 
         font = cv2.FONT_HERSHEY_SIMPLEX
         bottomLeftCornerOfText = (20,400)
@@ -21,7 +21,7 @@ class Videoextractor:
 
             cv2.imwrite('bild.jpg',frame)
             #classification_text = self.direction_to_number(self.classifier.classifyAImage('bild.jpg'))
-            pos=self.classifier.classifyAImage('bild.jpg')
+            pos=self.classifier.classifyAImage(frame)
             cv2.putText(frame, 'Klasse: ' + str(pos)+"%", bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
             cv2.imshow('frame', frame)
 

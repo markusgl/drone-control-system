@@ -4,7 +4,6 @@ import rospy
 import cv2
 import time
 import ftplib
-import json
 
 from ClassifiyImages import Classify
 from sensor_msgs.msg import Image as rosimg
@@ -42,44 +41,34 @@ class App:
 		
 	def initDrone(self):
 		self.droneControl = DroneControl()
-		self.homeButton = Button(self.frame, text="Return Home", command = self.writeInFile)
+		self.homeButton = Button(self.frame, text="Return Home", command = self.startHomecoming)
 		self.homeButton.pack()
-		self.jsonData=[]
 		
 		self.handleDrone()
 		self.initStream()
 		
+	#takes a frame, sends it to the classifier and calls the next steering command
 	def forwardImage(self, data):
-		dict={}
 		try:
 			#decode image
-			cv2_img = self.bridge.imgmsg_to_cv2(data, 'bgr8')
+			cv2Img = self.bridge.imgmsg_to_cv2(data, 'bgr8')
+			ropePosition = self.classifier.classifyAImage(cv2Img)
+			
+			print(ropePosition)
+			self.dronecontrol.flyToNextPosition(ropePosition)
+			
+			time.sleep(0.05)
 		except CvBridgeError, e:
 			print(e)
-		else:
-			#save image
-			self.count = self.count + 1
-			rope_image = 'image' + str(self.count) + '.jpeg'
-			print("Received an image: " + rope_image)
-		
-			cv2.imwrite(rope_image, cv2_img)
-		ropePosition = self.classifier.classifyAImage(rope_image)
-		print(ropePosition)
-		dict={	'img':rope_image ,
-				'pos': ropePosition}
-		self.dronecontrol.flyToNextPosition(ropePosition)
-		self.jsonData.append(dict)
-
-		time.sleep(0.05)
 
 	def handleDrone(self):
 		print("Handling Drone")
 		rospy.Subscriber('classifyTopic', rosimg, self.forwardImage)
 	
-	def writeInFile(self):
+	def startHomecoming(self):
 		self.droneControl.returnHome()
+		
 	def stitchImage(self):
-		self.dronecontrol.returnHome()
 		#getting all images from internal media for stitching
 		ftp = ftplib.FTP("192.168.42.1:21")
 		path = 'internal_000/Bebop_Drone/media'
@@ -93,9 +82,6 @@ class App:
 			print 'Processing file {} ... {} of {} ...'.format(filename, curr, count)
 			ftp.retrbinary("RETR " + filename, open(filename, 'wb').write)
 		ftp.quit()
-		
-		with open('testPrediction.json', 'a') as outfile:
-			outfile.writelines(json.dumps(item)+ '\n' for item in self.jsonData)		
 	
 	def initStream(self):
 		print("Initialize video stream")
@@ -113,29 +99,6 @@ class App:
 		cv2.imshow( "Video Stream", cv2Img)    # load frame into the OpenCV Window
 		cv2.waitKey(5)
 		
-	#displays the livestream on the GUI
-	def forwardImage(self, data):	
-		dict={}
-		try:
-			#decode image
-			cv2Img = self.bridge.imgmsg_to_cv2(data, 'bgr8')
-		except CvBridgeError, e:
-			print(e)
-		else:
-			#save image
-			self.count = self.count + 1
-			ropeImage = 'image' + str(self.count) + '.jpeg'
-			print("Received an image: " + ropeImage)
-		
-			cv2.imwrite(ropeImage, cv2Img)
-		ropePosition = self.classifier.classifyAImage(ropeImage)
-		print(ropePosition)
-		dict={	'img':ropeImage ,
-				'pos': ropePosition}
-		self.droneControl.flyToNextPosition(ropePosition)
-		self.jsonData.append(dict)
-		
-		time.sleep(0.05)
 		
 def main():
 	rospy.init_node('ropeRecognition', anonymous=True)

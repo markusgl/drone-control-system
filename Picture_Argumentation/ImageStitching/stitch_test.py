@@ -75,6 +75,24 @@ def crop_images():
         print(end)
         print(path)
 
+def video_extraction():
+    count = 0
+    cap = cv2.VideoCapture("F:\\Videos_vong_Drohne\\Dachelwand1.mp4")
+    while (cap.isOpened()):
+        ret, frame = cap.read()
+
+        count += 1
+        if count % 20 == 0:
+            rope_image = 'image' + str(count) + '.jpeg'
+            print("Received an image: " + rope_image)
+
+            cv2.imwrite("F:\\Videos_vong_Drohne\\frames\\" + rope_image, frame)
+
+        cv2.imshow('frame', frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
 
 #stitch_panorama_example()
-stitch_wall_images()
+#stitch_wall_images()
+video_extraction()

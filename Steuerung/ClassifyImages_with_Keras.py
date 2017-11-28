@@ -62,14 +62,14 @@ class Classify:
         end = partWidth
         counter=0
         arr=[]
-        while not stopper:
-            if end >imgWidth:
-                stopper=True
-                end=imgWidth
-                start=end-partWidth
+        while end < imgWidth:
+            # if end >imgWidth:
+            #     stopper=True
+            #     end=imgWidth
+            #     start=end-partWidth
             crop_img = ori_img[0:128, start:end]
             #cv2.imwrite("bild"+str(counter)+".jpg", crop_img)
-            start=end+20
+            start=end-64
             end=start+partWidth
             img = np.reshape(crop_img, [1, 128, 128, 3])
             counter+=1
@@ -86,21 +86,30 @@ class Classify:
 
     def __predict(self,ImgArray):
         arr=[]
-        start = time.time()
+        #start = time.time()
         formerPrediction=0
-        for img in ImgArray:
-            classes = np.argmax( self.model.predict(img))
-            arr.append(classes)
 
-            #early stop if two in following images
-            #was a rope predicted
-            # if formerPrediction + classes[0][0] == 2:
-            #     break
-            # else:
-            #     formerPrediction=classes[0][0]
-
+        test2= np.reshape(np.asarray(ImgArray), [len(ImgArray),128,128,3])
+        start = time.time()
+        arr= self.model.predict(test2, batch_size=len(ImgArray))
         print('time for prediction (sec): %s' % (time.time() - start))
-        return arr
+        newArr=[]
+        for elem in arr:
+            newArr.append(np.argmax(elem))
+        return newArr
+        # for img in ImgArray:
+        #     classes = np.argmax( self.model.predict(img))
+        #     arr.append(classes)
+        #
+        #     # early stop if two in following images
+        #     # was a rope predicted
+        #     if formerPrediction + classes == 2:
+        #         break
+        #     else:
+        #         formerPrediction=classes
+
+        #print('time for prediction (sec): %s' % (time.time() - start))
+        #return arr
 
     def __getRopePosition(self,PredictedArray):
         indices=[i for i, x in enumerate(PredictedArray) if x == 1]
@@ -118,7 +127,8 @@ if __name__ == '__main__':
 
     #Objekterzeugung mit Kontruktoraufruf
     classifier = Classify('PreTrained49-0.01.hdf5')
-    pos= classifier.classifyAImage('bild.jpg')
+    img= cv2.imread('bild.jpg')
+    pos= classifier.classifyAImage(img)
     font = cv2.FONT_HERSHEY_SIMPLEX
     bottomLeftCornerOfText = (20, 400)
     fontScale = 1

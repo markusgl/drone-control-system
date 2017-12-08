@@ -36,91 +36,59 @@ class Classify:
             model = load_model(filename)
         return model
 
-    def __load_image(self,image):
-        return cv2.imread(image)
+    def __slice(self, Image, first):
 
-
-    def __reshapeAndPredict(self, image):
-        """
-        arg: binary image file
-        return: list
-        """
-        cv2.imshow('image', image)
-        img = cv2.resize(image, (128, 128))
-        img = np.reshape(img, [1, 128, 128, 3])
-        classes = self.model.predict_classes(img)
-        return classes
-
-    def __slice(self, Image):
-        starttime=time.time()
-        ori_img = Image#cv2.imread(Image)
+        ori_img = Image
         imgWidth = ori_img.shape[1]
         imgHeight = ori_img.shape[0]
-        stopper= False
+        if first:
+            startHeight = 0
+        else:
+            startHeight = int(round(imgHeight / 2) - 64)
         partWidth=128
         start = 0
         end = partWidth
         counter=0
         arr=[]
         while end < imgWidth:
-            # if end >imgWidth:
-            #     stopper=True
-            #     end=imgWidth
-            #     start=end-partWidth
-            crop_img = ori_img[0:128, start:end]
-            #cv2.imwrite("bild"+str(counter)+".jpg", crop_img)
+
+            crop_img = ori_img[startHeight:startHeight+128, start:end]
+            cv2.imwrite("bild"+str(counter)+".jpg", crop_img)
             start=end-64
             end=start+partWidth
             img = np.reshape(crop_img, [1, 128, 128, 3])
             counter+=1
             arr.append(img)
-        print('time for cropping (sec): %s' % (time.time() - starttime))
+
         return arr
 
     def classifyAImage(self, imagePath):
-        start = time.time()
-        slicedImagearray= self.__slice(imagePath)
-        #position=self.__getRopePosition(self.__predict(slicedImagearray))
-        position = self.__predict(slicedImagearray)
-        #print('classify image elapsed time (sec): %s' % (time.time() - start))
+        norRopeFound=True
+        counter=0
+        while norRopeFound:
+            slicedImagearray= self.__slice(imagePath,
+                                           norRopeFound)
+            position=self.__getRopePosition(self.__predict(slicedImagearray))
+            if position != -1  or counter==2:
+                return position
+            elif position ==-1:
+                counter+=1
+
         return position
 
     def __predict(self,ImgArray):
-        arr=[]
-        #start = time.time()
-        formerPrediction=0
+        predictionArray=[]
+        binaryPrediction = []
+        ImagesAsTensor = np.reshape(np.asarray(ImgArray), [len(ImgArray),128,128,3])
+        predictionArray= self.model.predict(ImagesAsTensor , batch_size=len(ImgArray))
 
-        test2 = np.reshape(np.asarray(ImgArray), [len(ImgArray),128,128,3])
-        start = time.time()
-        arr= self.model.predict(test2, batch_size=len(ImgArray))
-        arr2 =[]
-        for val in arr:
+        for val in predictionArray:
             if min(val) > 0.8:
-                print(min(val))
-                arr2.append(1)
+                binaryPrediction.append(1)
             else:
-                arr2.append(0)
-            #arr2.append(int(round(min(val))))
-        #print('time for prediction (sec): %s' % (time.time() - start))
-        '''
-        newArr=[]
-        for elem in arr:
-            newArr.append(np.argmax(elem))
-        return newArr
-        '''
-        # for img in ImgArray:
-        #     classes = np.argmax( self.model.predict(img))
-        #     arr.append(classes)
-        #
-        #     # early stop if two in following images
-        #     # was a rope predicted
-        #     if formerPrediction + classes == 2:
-        #         break
-        #     else:
-        #         formerPrediction=classes
+                binaryPrediction.append(0)
 
-        #print('time for prediction (sec): %s' % (time.time() - start))
-        return arr2
+        return binaryPrediction
 
     def __getRopePosition(self,PredictedArray):
         indices=[i for i, x in enumerate(PredictedArray) if x == 1]
@@ -137,7 +105,7 @@ class Classify:
 if __name__ == '__main__':
 
     #Objekterzeugung mit Kontruktoraufruf
-    classifier = Classify('PreTrained49-0.01.hdf5')
+    classifier = Classify('BinaryRopeDetection-06-0.00.hdf5')
     img= cv2.imread('bild.jpg')
     pos= classifier.classifyAImage(img)
     font = cv2.FONT_HERSHEY_SIMPLEX
@@ -145,9 +113,8 @@ if __name__ == '__main__':
     fontScale = 1
     fontColor = (255, 255, 255)
     lineType = 2
-    frame= cv2.imread('bild.jpg')
-    cv2.putText(frame, 'Klasse: ' + str(pos) + "%", bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
-    cv2.imshow('frame', frame)
+    cv2.putText(img, 'Klasse: ' + str(pos) + "%", bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
+    cv2.imshow('frame', img)
     cv2.waitKey(0)
 
 

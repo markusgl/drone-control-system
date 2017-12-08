@@ -48,19 +48,17 @@ class Classify:
         partWidth=128
         start = 0
         end = partWidth
-        counter=0
-        arr=[]
+        croppedImages=[]
         while end < imgWidth:
 
             crop_img = ori_img[startHeight:startHeight+128, start:end]
-            cv2.imwrite("bild"+str(counter)+".jpg", crop_img)
+        
             start=end-64
             end=start+partWidth
             img = np.reshape(crop_img, [1, 128, 128, 3])
-            counter+=1
-            arr.append(img)
+            croppedImages.append(img)
 
-        return arr
+        return croppedImages
 
     def classifyAImage(self, imagePath):
         norRopeFound=True

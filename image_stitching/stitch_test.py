@@ -1,6 +1,8 @@
-import cv2
 import math
-from Picture_Argumentation.ImageStitching.stitchit_old import ImageStitcher
+
+import cv2
+
+from image_stitching.stitchit_old import ImageStitcher
 
 
 def stitch_wall_images():

@@ -39,12 +39,12 @@ class Classify:
     def __load_image(self,image):
         return cv2.imread(image)
 
-    """
-    arg: binary image file
-    return: list
-    """
-    def __reshapeAndPredict(self, image):
 
+    def __reshapeAndPredict(self, image):
+        """
+        arg: binary image file
+        return: list
+        """
         cv2.imshow('image', image)
         img = cv2.resize(image, (128, 128))
         img = np.reshape(img, [1, 128, 128, 3])
@@ -80,8 +80,9 @@ class Classify:
     def classifyAImage(self, imagePath):
         start = time.time()
         slicedImagearray= self.__slice(imagePath)
-        position=self.__getRopePosition(self.__predict(slicedImagearray))
-        print('classify image elapsed time (sec): %s' % (time.time() - start))
+        #position=self.__getRopePosition(self.__predict(slicedImagearray))
+        position = self.__predict(slicedImagearray)
+        #print('classify image elapsed time (sec): %s' % (time.time() - start))
         return position
 
     def __predict(self,ImgArray):
@@ -89,14 +90,24 @@ class Classify:
         #start = time.time()
         formerPrediction=0
 
-        test2= np.reshape(np.asarray(ImgArray), [len(ImgArray),128,128,3])
+        test2 = np.reshape(np.asarray(ImgArray), [len(ImgArray),128,128,3])
         start = time.time()
         arr= self.model.predict(test2, batch_size=len(ImgArray))
-        print('time for prediction (sec): %s' % (time.time() - start))
+        arr2 =[]
+        for val in arr:
+            if min(val) > 0.8:
+                print(min(val))
+                arr2.append(1)
+            else:
+                arr2.append(0)
+            #arr2.append(int(round(min(val))))
+        #print('time for prediction (sec): %s' % (time.time() - start))
+        '''
         newArr=[]
         for elem in arr:
             newArr.append(np.argmax(elem))
         return newArr
+        '''
         # for img in ImgArray:
         #     classes = np.argmax( self.model.predict(img))
         #     arr.append(classes)
@@ -109,7 +120,7 @@ class Classify:
         #         formerPrediction=classes
 
         #print('time for prediction (sec): %s' % (time.time() - start))
-        #return arr
+        return arr2
 
     def __getRopePosition(self,PredictedArray):
         indices=[i for i, x in enumerate(PredictedArray) if x == 1]

@@ -54,7 +54,7 @@ class Classify:
 
             crop_img = ori_img[startHeight:startHeight+128, start:end]
         
-            start=end-64
+            start=end
             end=start+partWidth
             img = np.reshape(crop_img, [1, 128, 128, 3])
             croppedImages.append(img)
@@ -81,13 +81,14 @@ class Classify:
         ImagesAsTensor = np.reshape(np.asarray(ImgArray), [len(ImgArray),128,128,3])
         predictionArray= self.model.predict(ImagesAsTensor , batch_size=len(ImgArray))
 
-        for val in predictionArray:
-            if min(val) > 0.8:
-                binaryPrediction.append(1)
-            else:
-                binaryPrediction.append(0)
-
-        return binaryPrediction
+        return np.argmax(predictionArray)
+        # for val in predictionArray:
+        #     if min(val) > 0.8:
+        #         binaryPrediction.append(1)
+        #     else:
+        #         binaryPrediction.append(0)
+        #
+        # return binaryPrediction
 
     def __getRopePosition(self,PredictedArray):
         indices=[i for i, x in enumerate(PredictedArray) if x == 1]

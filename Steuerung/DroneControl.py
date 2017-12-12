@@ -8,56 +8,60 @@ from bebop_msgs.msg import Ardrone3PilotingStateFlyingStateChanged
 from bebop_msgs.msg import Ardrone3PilotingStateAltitudeChanged
 from geometry_msgs.msg import Twist
 
-class DroneControl:
+class DroneControl(object):
+	"""
+	Class for controlling the drone. Includes all relevant commands and methods
+	for flying.
+	"""
 
-	steeringActive = False
-	topReached = False
+	steering_active = False
+	top_reached = False
 	hovering = False
-	tookOff = False
-	lastSteeringCommandY = 0.0
-	lastSteeringCommandZ = 0.0
-	currentAltitude = 0.0
-	lastAltitude = 0.0
-	snapshotDistance = 1.0	#every x meters a snapshot is taken when the rope is in the center
-	lastDirection = 3
-	landingInitialized = False
-	isLanding = False
+	took_off = False
+	last_steering_command_y = 0.0
+	last_steering_command_z = 0.0
+	current_altitude = 0.0
+	last_altitude = 0.0
+	snapshot_distance = 1.0	#every x meters a snapshot is taken when the rope is in the center
+	last_direction = 3
+	landing_initialized = False
+	is_landing = False
 		
 	def __init__(self):
 		print("Initialize")
-		self.emptyMsg = Empty()
-		self.takeoffPub = rospy.Publisher("/bebop/takeoff", Empty, queue_size = 10) 						#Publisher for takeoff
-		self.readyToFlySub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/FlyingStateChanged",
-		 Ardrone3PilotingStateFlyingStateChanged, self.isReadyToFly)										#Subscriber that checks if drone is ready to fly
-		self.flyingPub = rospy.Publisher("/bebop/cmd_vel", Twist, queue_size = 15)							#Publisher for flying
-		self.landingPub = rospy.Publisher("/bebop/land", Empty, queue_size = 10)							#Publisher for landing
-		self.readyToLandSub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/AltitudeChanged",
-		 Ardrone3PilotingStateAltitudeChanged, self.checkForLanding)										#Subscriber that checks is landing can be started
-		self.checkAltitudeSub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/AltitudeChanged",
-		 Ardrone3PilotingStateAltitudeChanged, self.setAltitude)											#Subscriber that sets the current altitude value
-		self.landingSub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/FlyingStateChanged",
-		 Ardrone3PilotingStateFlyingStateChanged, self.setIfLanding)										#Subscriber that checks if the drone is landing
-		self.homecomingPub = rospy.Publisher("bebop/autoflight/navigate_home", Bool, queue_size = 10)		#Publisher for the return home mission
-		self.snapshotPub = rospy.Publisher("/bebop/snapshot", Empty, queue_size = 10)						#Publisher for taking Pictures
+		self.empty_msg = Empty()
+		self.takeoff_pub = rospy.Publisher("/bebop/takeoff", Empty, queue_size = 10) 						#Publisher for takeoff
+		self.ready_to_fly_sub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/FlyingStateChanged",
+		 Ardrone3PilotingStateFlyingStateChanged, self.is_ready_to_fly)										#Subscriber that checks if drone is ready to fly
+		self.flying_pub = rospy.Publisher("/bebop/cmd_vel", Twist, queue_size = 15)							#Publisher for flying
+		self.landing_pub = rospy.Publisher("/bebop/land", Empty, queue_size = 10)							#Publisher for landing
+		self.ready_to_land_sub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/AltitudeChanged",
+		 Ardrone3PilotingStateAltitudeChanged, self.check_for_landing)										#Subscriber that checks is landing can be started
+		self.check_altitude_sub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/AltitudeChanged",
+		 Ardrone3PilotingStateAltitudeChanged, self.set_altitude)											#Subscriber that sets the current altitude value
+		self.landing_sub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/FlyingStateChanged",
+		 Ardrone3PilotingStateFlyingStateChanged, self.set_if_landing)										#Subscriber that checks if the drone is landing
+		self.homecoming_pub = rospy.Publisher("bebop/autoflight/navigate_home", Bool, queue_size = 10)		#Publisher for the return home mission
+		self.snapshot_pub = rospy.Publisher("/bebop/snapshot", Empty, queue_size = 10)						#Publisher for taking Pictures
 		self.takeoff()
 
 	def takeoff(self):
-		self.takeoffSub = rospy.Subscriber("/bebop/takeoff", Empty, self.setTookOff)
-		while self.tookOff == False:
-			self.takeoffPub.publish(self.emptyMsg)
+		self.takeoff_sub = rospy.Subscriber("/bebop/takeoff", Empty, self.set_took_off)
+		while not self.took_off:
+			self.takeoff_pub.publish(self.empty_msg)
 			print("Try Takeoff")
 			time.sleep(3)
 		print("Start Takeoff")
-		self.takeoffSub.unregister()
-		while self.hovering == False:	#waits for the takeoff to be terminated
+		self.takeoff_sub.unregister()
+		while not self.hovering:	#waits for the takeoff to be terminated
 			time.sleep(1)
-		self.steeringActive = True
-		self.readyToFlySub.unregister()
+		self.steering_active = True
+		self.ready_to_fly_sub.unregister()
 		self.hovering = False
 		self.fly()
 
-	def setTookOff(self,msg):
-		self.tookOff = True
+	def set_took_off(self,msg):
+		self.took_off = True
 
 	"""
 	ropePosition is a number between 1 and 5:
@@ -70,89 +74,90 @@ class DroneControl:
 	7 -> No rope detected
 	"""
 	def fly(self):
-		if self.steeringActive:
-			self.flyToNextPosition(self.lastDirection)		
+		if self.steering_active:
+			self.fly_to_next_position(self.last_direction)		
 
 	# method called when a frame is rendered and the rope position is determined
-	def flyToNextPosition(self, ropePosition):
-		if self.steeringActive and self.landingInitialized == False:
-			twistMsg = Twist()
-			self.lastSteeringCommandZ = 0.0
+	def fly_to_next_position(self, rope_position):
+		if self.steering_active and not self.landing_initialized:
+			twist_msg = Twist()
+			self.last_steering_command_z = 0.0
 			
-			if ropePosition == 1:
-				twistMsg.linear.y = 0.75
-				self.lastSteeringCommandY = 0.75
-				self.lastDirection = 1
-			elif ropePosition == 2:
-				twistMsg.linear.y = 0.25
-				self.lastSteeringCommandY = 0.25
-				self.lastDirection = 2
-			elif ropePosition == 3:
-				self.lastDirection = 3
-			elif ropePosition == 4:
-				twistMsg.linear.y = -0.25
-				self.lastSteeringCommandY = -0.25
-				self.lastDirection = 4
-			elif ropePosition == 5:
-				twistMsg.linear.y = -0.75
-				self.lastSteeringCommandY = -0.75
-				self.lastDirection = 5
-			elif ropePosition == 6:
-				self.topReached = True
-				twistMsg.linear.y = 0.0
-				self.lastSteeringCommandY = 0.0
-				twistMsg.linear.z = 0
-				self.steeringActive = False
-			elif ropePosition == 7:
-				twistMsg.linear.y = -1.0 * (self.lastSteeringCommandY)
-				self.lastSteeringCommandY = twistMsg.linear.y
+			if rope_position == 1:
+				twist_msg.linear.y = 0.75
+				self.last_steering_command_y = 0.75
+				self.last_direction = 1
+			elif rope_position == 2:
+				twist_msg.linear.y = 0.25
+				self.last_steering_command_y = 0.25
+				self.last_direction = 2
+			elif rope_position == 3:
+				self.last_direction = 3
+			elif rope_position == 4:
+				twist_msg.linear.y = -0.25
+				self.last_steering_command_y = -0.25
+				self.last_direction = 4
+			elif rope_position == 5:
+				twist_msg.linear.y = -0.75
+				self.last_steering_command_y = -0.75
+				self.last_direction = 5
+			elif rope_position == 6:
+				self.top_reached = True
+				twist_msg.linear.y = 0.0
+				self.last_steering_command_y = 0.0
+				twist_msg.linear.z = 0
+				self.steering_active = False
+			elif rope_position == 7:
+				twist_msg.linear.y = -1.0 * (self.last_steering_command_y)
+				self.last_steering_command_y = twist_msg.linear.y
 			
-			if self.topReached == False and ropePosition != 7:
-				if ropePosition == 3 and self.currentAltitude - self.lastAltitude >= self.snapshotDistance:
-					self.snapshotPub.publish(self.emptyMsg)	#if the rope is in the center and the drone is on the way up take a pic
-				twistMsg.linear.z = 0.5
-				self.lastSteeringCommandZ = 0.5
-			elif ropePosition != 7:
-				twistMsg.linear.z = -0.5
-				self.lastSteeringCommandZ = -0.5
+			if not self.top_reached and rope_position != 7:
+				if rope_position == 3 and self.current_altitude - self.last_altitude >= self.snapshot_distance:
+					self.snapshot_pub.publish(self.empty_msg)	#if the rope is in the center and the drone is on the way up take a pic
+				twist_msg.linear.z = 0.5
+				self.last_steering_command_z = 0.5
+			elif rope_position != 7:
+				twist_msg.linear.z = -0.5
+				self.last_steering_command_z = -0.5
 			else:
-				twistMsg.linear.z = 0.0
+				twist_msg.linear.z = 0.0
 				
-			self.flyingPub.publish(twistMsg)	
-			print(twistMsg) #DEBUG
+			self.flying_pub.publish(twist_msg)	
+			print(twist_msg) #DEBUG
 		
-	def isReadyToFly(self, msg):
+	def is_ready_to_fly(self, msg):
 		if msg.state == 1: self.hovering = False
 		if msg.state == 2: self.hovering = True
 		
-	def checkForLanding(self, msg):
-		if self.topReached and msg.altitude <= 1.5:
+	def check_for_landing(self, msg):
+		if self.top_reached and msg.altitude <= 1.5:
 			self.land()
 			print("Init Landing Method")
 			
-	def setAltitude(self, msg):
-		self.lastAltitude = self.currentAltitude
-		self.currentAltitude = msg.altitude
+	def set_altitude(self, msg):
+		self.last_altitude = self.current_altitude
+		self.current_altitude = msg.altitude
 
 	def land(self):
-		self.landingInitialized = True
-		while self.isLanding == False:
-			self.landingPub.publish(self.emptyMsg)
+		self.landing_initialized = True
+		while not self.isLanding:
+			self.landing_pub.publish(self.empty_msg)
 			time.sleep(1)
 			print("Probier mer halt amol zu landen!")
 		print("Land")
 	
-	def setIfLanding(self, msg):
-		if msg.state == 4: self.isLanding = True
+	def set_if_landing(self, msg):
+		if msg.state == 4: self.is_landing = True
 		
 	#emergency method forces the drone to come home	
-	def returnHome(self):
-		self.landAfterHomecomingSub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/FlyingStateChanged", Ardrone3PilotingStateFlyingStateChanged, self.landAtHome)
-		boolMsg = Bool(True)
-		self.flyingPub = None
-		self.homecomingPub.publish(boolMsg)
+	def return_home(self):
+		self.land_after_homecoming_sub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/FlyingStateChanged",
+		 Ardrone3PilotingStateFlyingStateChanged, self.land_at_home)
+		bool_msg = Bool(True)
+		self.flying_pub = None
+		self.homecoming_pub.publish(bool_msg)
 		print("Returning home")
 		
 	#landing after returnHome-Method	
-	def landAtHome(self, msg):
+	def land_at_home(self, msg):
 		if msg.state==2: self.land()

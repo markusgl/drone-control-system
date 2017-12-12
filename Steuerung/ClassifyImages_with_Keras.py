@@ -10,12 +10,12 @@ from keras.applications.mobilenet import MobileNet
 import os
 import time
 import cv2
-import math
 from keras.models import load_model
 import numpy as np
 import keras
 
 previous_pos = 0
+no_rope_counter = 0
 class Classify:
 
     def __init__(self, graph_directory):
@@ -23,7 +23,7 @@ class Classify:
         os.environ['TF_CPP_MIN_LOG_LEVEL']='2' # turn down log-level to suppress insignificant warning messages
         self.top_predictions=5
         self.model=self.__load_graph(graph_directory)
-        self.__compileModel()
+        #self.__compileModel()
         print('Init/Load Grapg, Start Session elapsed time (sec): %s' % (time.time() - start))
 
     def __compileModel(self):
@@ -37,128 +37,88 @@ class Classify:
             model = load_model(filename)
         return model
 
-    def __slice(self, Image, first):
+    def __slice(self, image, start_height):
+        img_width = image.shape[1]
+        partWidth = 128
+        start_width = 0
+        end_width = partWidth
+        cropped_images = []
 
-        ori_img = Image
-        imgWidth = ori_img.shape[1]
-        imgHeight = ori_img.shape[0]
-        if first:
-            startHeight = 0
-        else:
-            startHeight = int(round(imgHeight / 2) - 64)
-        partWidth=128
-        start = 0
-        end = partWidth
-        croppedImages=[]
-        while end < imgWidth:
+        while end_width < img_width:
+            crop_img = image[start_height:start_height + 128, start_width:end_width]
+            start_width = end_width
+            end_width = start_width+partWidth
 
-            crop_img = ori_img[startHeight:startHeight+128, start:end]
-        
-            start=end
-            end=start+partWidth
-            img = np.reshape(crop_img, [1, 128, 128, 3])
-            croppedImages.append(img)
+            cropped_images.append(np.reshape(crop_img, [1, 128, 128, 3]))
+        return cropped_images
 
-        return croppedImages
+    def classifyAImage(self, image_path):
+        """
+        - Try to detect rope in top most image slice
+        - If no rope is detected, try to find rope in the middle image slice
+        :param image_path:
+        :return: 0 to 4: rope position left to right
+                -1: no rope found
+        """
+        global no_rope_counter
+        start_height, counter = 0, 0
 
-    def classifyAImage(self, imagePath):
-        norRopeFound=True
-        counter=0
-        while norRopeFound:
-            slicedImagearray= self.__slice(imagePath,
-                                           norRopeFound)
-            position=self.__getRopePosition(self.__predict(slicedImagearray))
-            if position != -1  or counter==2:
+        # TODO - Positionen mit DroneControl vereinbaren
+        while counter < 2:
+            sliced_image_array = self.__slice(image_path, start_height)
+            position = self.__predict(sliced_image_array)
+            if position > -1:
+                no_rope_counter = 0
                 return position
-            elif position ==-1:
-                counter+=1
+            start_height = 64
+            counter += 1
 
+        no_rope_counter += 1
+        print("no_rope_counter: " + str(no_rope_counter))
+        if no_rope_counter > 15:
+            return 6 #top
         return position
 
-    def __predict(self,ImgArray):
-        predictionArray=[]
-        binaryPrediction = []
-        ImagesAsTensor = np.reshape(np.asarray(ImgArray), [len(ImgArray),128,128,3])
-        predictionArray= self.model.predict(ImagesAsTensor , batch_size=len(ImgArray))
+    def __predict(self, img_array):
+        """
+        :param img_array: array of images
+        :return: 0 to 4: rope position left to right
+                -1: no rope found
+        """
+        images_as_tensor = np.reshape(np.asarray(img_array), [len(img_array), 128, 128, 3])
+        prediction_array = self.model.predict(images_as_tensor, batch_size=len(img_array))
 
-        return np.argmax(predictionArray)
-        # for val in predictionArray:
-        #     if min(val) > 0.8:
-        #         binaryPrediction.append(1)
-        #     else:
-        #         binaryPrediction.append(0)
-        #
-        # return binaryPrediction
+        #print(max(prediction_array))
+        if max(prediction_array) < 0.5:  # TODO - Wert evtl. anpassen -> Praxis
+            #print("no rope found")
+            return -1
 
-    def __getRopePosition(self,PredictedArray):
-        indices=[i for i, x in enumerate(PredictedArray) if x == 1]
-        print(PredictedArray)
+        return np.argmax(prediction_array)
 
-        global previous_pos
-        #print("Previous rope position: " + str(previous_pos))
 
-        if previous_pos == 1: #links
-            search_area = [1, 2, 3, 4, 5]
-        elif previous_pos == 2: #halblinks
-            search_area = [2, 1, 3, 4, 5]
-        elif previous_pos == 3: #mitte
-            search_area = [3, 2, 4, 1, 5]
-        elif previous_pos == 4: #halbrechts
-            search_area = [4, 3, 5, 2, 1]
-        elif previous_pos == 5: #rechts
-            search_area = [5, 4, 3, 2, 1]
-        #elif previous_pos == 6: #top
-            # TODO
-        else:
-            search_area = [3, 2, 4, 1, 5] #mitte
-
-        for pos in search_area:
-            for i in self.__direction_to_predictarray(pos):
-                if PredictedArray[i] == 1:
-                    ropepos = pos
-                    previous_pos = pos
-                    #print("Ropepos: " + str(ropepos))
-                    return ropepos
-
-        ropepos = 7
-        previous_pos = ropepos
-        return ropepos
-
-    def __direction_to_predictarray(self, previous_pred):
-        if previous_pred == 1: #links
-            return [0,1]
-        if previous_pred == 2: #halblinks
-            return [2,3]
-        if previous_pred == 3: #mitte
-            return [4,5,6,7]
-        if previous_pred == 4: #halbrechts
-            return [8,9]
-        if previous_pred == 5: #rechts
-            return [10,11]
-
-def direction_to_number(self, arg):
-    options = {1: "links",
-               2: "halblinks",
-               3: "mitte",
-               4: "halbrechts",
-               5: "rechts",
-               6: "top",
-               7: "kein Seil",
-    }
-    return options.get(arg, "nothing")
-
+    # TODO - evlt in DroneControl anpassen und hier loeschen
+    def __argmax_to_dronepos(self, arg):
+        options = {0: 1,
+                   1: 2,
+                   2: 3,
+                   3: 4,
+                   4: 5,
+                   -1: 7
+                   }
+        return options.get(arg, "nothing")
 
 if __name__ == '__main__':
     #Objekterzeugung mit Kontruktoraufruf
     classifier = Classify('/Users/mgl/dev/tf_models/HD5/BinaryRopeDetection-06-0.00.hdf5')
-    img= cv2.imread('bild.jpg')
-    pos= classifier.classifyAImage(img)
+    img = cv2.imread('bild.jpg')
+    img = cv2.resize(img, (0, 0), fx=0.75, fy=0.75)
+    pos = classifier.classifyAImage(img)
     font = cv2.FONT_HERSHEY_SIMPLEX
     bottomLeftCornerOfText = (20, 400)
     fontScale = 1
     fontColor = (255, 255, 255)
     lineType = 2
-    cv2.putText(img, 'Klasse: ' + str(direction_to_number(pos)), bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
+    cv2.putText(img, 'Klasse: ' + str(pos), bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
     cv2.imshow('frame', img)
     cv2.waitKey(0)
 

@@ -3,12 +3,24 @@ import cv2
 import numpy as np
 import os
 
-class NewStitcher:
+class Stitcher:
     def __init__(self):
         # determine if we are using OpenCV v3.X
         self.isv3 = imutils.is_cv3()
 
-    def stitch(self, images, ratio=0.75, reprojThresh=4.0):
+    def stitch_images(self, video_stream):
+        # bottom to top order
+        images = self.__video_extraction(video_stream)
+
+        stitched_img = images[0]
+        print("Start stitching images - this may take some time...")
+        for x in range(1, len(images)):
+            stitched_img = self.__stitch([stitched_img, images[x]])
+
+        cv2.imshow("Route", imutils.resize(stitched_img, width=600))
+        cv2.waitKey(0)
+
+    def __stitch(self, images, ratio=0.75, reprojThresh=4.0):
         (kpsA, featuresA) = self._detectAndDescribe(images[0])
         (kpsB, featuresB) = self._detectAndDescribe(images[1])
         M = self._matchKeypoints(kpsA, kpsB, featuresA, featuresB, ratio, reprojThresh)
@@ -127,8 +139,18 @@ class NewStitcher:
         # return the visualization
         return vis
 
+    def __video_extraction(self, video):
+        cap = cv2.VideoCapture(video)
+        images = []
+        while cap.isOpened():
+            ret, frame = cap.read()
+            images.append(frame)
+
+        return images
+
+
 if __name__ == '__main__':
-    newStitcher = NewStitcher()
+    newStitcher = Stitcher()
     images = [] # bottom to top order
 
     path = "/Users/mgl/tools/IT-Projekt_vids/frames"
@@ -142,7 +164,7 @@ if __name__ == '__main__':
     stitched_img = images[0]
     print("Start stitching images - this may take some time...")
     for x in range(1, len(images)):
-        stitched_img = newStitcher.stitch([stitched_img, images[x]])
+        stitched_img = newStitcher.__stitch([stitched_img, images[x]])
 
     cv2.imshow("Result", imutils.resize(stitched_img, width=600)) # TODO - delete for production envirnoment
     cv2.imwrite("/Users/mgl/tools/IT-Projekt_vids/result/result_test1.jpg", imutils.resize(stitched_img, width=600))

@@ -10,6 +10,7 @@ from sensor_msgs.msg import Image as rosimg
 from cv_bridge import CvBridge, CvBridgeError
 from DroneControl import DroneControl
 from Tkinter import *
+from image_stitching.stitcher import Stitcher
 	
 class App:	
 	def __init__(self, root):
@@ -82,6 +83,7 @@ class App:
 			print 'Processing file {} ... {} of {} ...'.format(filename, curr, count)
 			ftp.retrbinary("RETR " + filename, open(filename, 'wb').write)
 		ftp.quit()
+		#Stitcher.stitch_images(filename) #TODO - call stitcher
 	
 	def initStream(self):
 		print("Initialize video stream")

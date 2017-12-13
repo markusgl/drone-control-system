@@ -46,7 +46,7 @@ class Classify:
             cropped_images.append(np.reshape(crop_img, [1, 128, 128, 3]))
         return cropped_images
 
-    def classifyAImage(self, image_path):
+    def classify_image(self, image_path):
         """
         - Try to detect rope in top most image slice
         - If no rope is detected, try to find rope in the middle image slice
@@ -54,7 +54,6 @@ class Classify:
         :return: 0 to 4: rope position left to right
                 -1: no rope found
         """
-        #global no_rope_counter
         start_height = 0
 
         # TODO - Positionen mit DroneControl vereinbaren
@@ -107,7 +106,7 @@ if __name__ == '__main__':
     classifier = Classify('/Users/mgl/dev/tf_models/HD5/BinaryRopeDetection-06-0.00.hdf5')
     img = cv2.imread('bild.jpg')
     img = cv2.resize(img, (0, 0), fx=0.75, fy=0.75)
-    pos = classifier.classifyAImage(img)
+    pos = classifier.classify_image(img)
     font = cv2.FONT_HERSHEY_SIMPLEX
     bottomLeftCornerOfText = (20, 400)
     fontScale = 1

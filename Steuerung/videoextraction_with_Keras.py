@@ -1,12 +1,12 @@
 import numpy as np
 import cv2
 
-from ClassifyImages_with_Keras import Classify
+from Steuerung.classify_images import Classify
 
 class Videoextractor:
     def __init__(self):
         #self.classifier = Classify('Trained99-0.01.hdf5')
-        self.classifier = Classify('/Users/mgl/dev/tf_models/HD5/BinaryRopeDetection-17-0.00.hdf5')
+        self.classifier = Classify('/Users/mgl/dev/tf_models/HD5/BinaryRopeDetection-06-0.00.hdf5')
 
     def __argmax_to_direction(self, arg):
         options = {0: "links",
@@ -35,7 +35,7 @@ class Videoextractor:
             frame = cv2.resize(frame, (0,0), fx=0.75,fy=0.75)
             #classification_text = self.direction_to_number(self.classifier.classifyAImage('bild.jpg'))
             #pos=self.classifier.classifyAImage(frame)
-            pos = self.classifier.classifyAImage(frame)
+            pos = self.classifier.classify_image(frame)
             print(pos)
             if pos == 6:
                 print("Top reached")

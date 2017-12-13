@@ -5,7 +5,7 @@ import cv2
 import time
 import ftplib
 
-from ClassifiyImages import Classify
+from Steuerung.classify_images import Classify
 from sensor_msgs.msg import Image as rosimg
 from cv_bridge import CvBridge, CvBridgeError
 from DroneControl import DroneControl
@@ -52,7 +52,7 @@ class App:
 		try:
 			#decode image
 			cv2Img = self.bridge.imgmsg_to_cv2(data, 'bgr8')
-			ropePosition = self.classifier.classifyAImage(cv2Img)
+			ropePosition = self.classifier.classify_image(cv2Img)
 			
 			print(ropePosition)
 			self.dronecontrol.flyToNextPosition(ropePosition)

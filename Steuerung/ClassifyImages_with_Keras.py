@@ -14,22 +14,16 @@ from keras.models import load_model
 import numpy as np
 import keras
 
-previous_pos = 0
-no_rope_counter = 0
+
 class Classify:
 
     def __init__(self, graph_directory):
         start = time.time()
         os.environ['TF_CPP_MIN_LOG_LEVEL']='2' # turn down log-level to suppress insignificant warning messages
         self.top_predictions=5
-        self.model=self.__load_graph(graph_directory)
-        #self.__compileModel()
+        self.model = self.__load_graph(graph_directory)
         print('Init/Load Grapg, Start Session elapsed time (sec): %s' % (time.time() - start))
-
-    def __compileModel(self):
-        self.model.compile(loss='binary_crossentropy',
-                      optimizer='rmsprop',
-                      metrics=['accuracy'])
+        self.no_rope_counter = 0
 
     def __load_graph(self, filename):
         from keras.utils.generic_utils import CustomObjectScope
@@ -60,22 +54,21 @@ class Classify:
         :return: 0 to 4: rope position left to right
                 -1: no rope found
         """
-        global no_rope_counter
-        start_height, counter = 0, 0
+        #global no_rope_counter
+        start_height = 0
 
         # TODO - Positionen mit DroneControl vereinbaren
-        while counter < 2:
+        for i in range(2):
             sliced_image_array = self.__slice(image_path, start_height)
             position = self.__predict(sliced_image_array)
             if position > -1:
-                no_rope_counter = 0
+                self.no_rope_counter = 0
                 return position
             start_height = 64
-            counter += 1
 
-        no_rope_counter += 1
-        print("no_rope_counter: " + str(no_rope_counter))
-        if no_rope_counter > 15:
+        self.no_rope_counter += 1
+        print("no_rope_counter: " + str(self.no_rope_counter))
+        if self.no_rope_counter > 15:
             return 6 #top
         return position
 

@@ -6,7 +6,6 @@ Beispielhafte Verwendung am Ende des Skripts
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-from keras.applications.mobilenet import MobileNet
 import os
 import time
 import cv2
@@ -27,7 +26,8 @@ class Classify:
 
     def __load_graph(self, filename):
         from keras.utils.generic_utils import CustomObjectScope
-        with CustomObjectScope({'relu6': keras.applications.mobilenet.relu6,'DepthwiseConv2D': keras.applications.mobilenet.DepthwiseConv2D}):
+        with CustomObjectScope({'relu6': keras.applications.mobilenet.relu6,
+                                'DepthwiseConv2D': keras.applications.mobilenet.DepthwiseConv2D}):
             model = load_model(filename)
         return model
 
@@ -82,6 +82,8 @@ class Classify:
         prediction_array = self.model.predict(images_as_tensor, batch_size=len(img_array))
 
         #print(max(prediction_array))
+
+        #norope threshold
         if max(prediction_array) < 0.5:  # TODO - Wert evtl. anpassen -> Praxis
             #print("no rope found")
             return -1

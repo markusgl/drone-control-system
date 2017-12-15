@@ -19,14 +19,14 @@ class Videoextractor:
         return options.get(arg, "nothing")
 
     def createVideo(self):
-        cap = cv2.VideoCapture('/Users/mgl/IT-Projekt/IT-Projekt_vids/output3.mpg')
+        cap = cv2.VideoCapture('/Users/mgl/IT-Projekt/IT-Projekt_vids/output2.mpg')
 
         font = cv2.FONT_HERSHEY_SIMPLEX
-        bottomLeftCornerOfText = (20,230)
+        middleLeftText = (20,280)
+        bottomLeftCornerOfText = (20,310)
         fontScale = 1
         fontColor = (255,255,255)
         lineType = 2
-        no_rope_counter = 0
 
         while(cap.isOpened()):
             ret, frame = cap.read()
@@ -40,7 +40,10 @@ class Videoextractor:
             if pos == 6:
                 print("Top reached")
                 break
-            cv2.putText(frame, 'Klasse: ' + str(self.__argmax_to_direction(pos)), bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
+            cv2.putText(frame, 'Klasse: ' + str(self.__argmax_to_direction(pos)), middleLeftText, font, fontScale, fontColor, lineType)
+            np.set_printoptions(precision=2, suppress=True)
+            cv2.putText(frame, 'Array: ' + str(self.classifier.prediction_array).replace('\n', ''), bottomLeftCornerOfText, font, 0.6, fontColor, 1)
+            cv2.putText(frame, 'No rope counter: ' + str(self.classifier.no_rope_counter).replace('\n', ''), (20,335), font, 0.6, fontColor, 1)
             #print("Received position from classifer: " + str(pos))
             cv2.imshow('frame', frame)
 

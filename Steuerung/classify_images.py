@@ -23,6 +23,7 @@ class Classify:
         self.model = self.__load_graph(graph_directory)
         print('Init/Load Grapg, Start Session elapsed time (sec): %s' % (time.time() - start))
         self.no_rope_counter = 0
+        self.prediction_array = []
 
     def __load_graph(self, filename):
         from keras.utils.generic_utils import CustomObjectScope
@@ -78,16 +79,16 @@ class Classify:
                 -1: no rope found
         """
         images_as_tensor = np.reshape(np.asarray(img_array), [len(img_array), 128, 128, 3])
-        prediction_array = self.model.predict(images_as_tensor, batch_size=len(img_array))
+        self.prediction_array = self.model.predict(images_as_tensor, batch_size=len(img_array))
 
         #print(max(prediction_array))
 
         #norope threshold
-        if max(prediction_array) < 0.5:  # TODO - Wert evtl. anpassen -> Praxis
+        if max(self.prediction_array) < 0.5:  # TODO - Wert evtl. anpassen -> Praxis
             #print("no rope found")
             return -1
 
-        return np.argmax(prediction_array)
+        return np.argmax(self.prediction_array)
 
 
     # TODO - evlt in DroneControl anpassen und hier loeschen
@@ -108,11 +109,16 @@ if __name__ == '__main__':
     img = cv2.resize(img, (0, 0), fx=0.75, fy=0.75)
     pos = classifier.classify_image(img)
     font = cv2.FONT_HERSHEY_SIMPLEX
-    bottomLeftCornerOfText = (20, 400)
+
+    middleLeftCornerOfText = (20, 280)
+    bottomLeftCornerOfText = (20, 300)
     fontScale = 1
     fontColor = (255, 255, 255)
     lineType = 2
-    cv2.putText(img, 'Klasse: ' + str(pos), bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
+    cv2.putText(img, 'Klasse: ' + str(pos), middleLeftCornerOfText, font, fontScale, fontColor, lineType)
+
+    np.set_printoptions(precision=2)
+    cv2.putText(img, 'Array: ' + str(classifier.prediction_array).replace('\n', ''), bottomLeftCornerOfText, font, 0.6, fontColor, 1)
     cv2.imshow('frame', img)
     cv2.waitKey(0)
 

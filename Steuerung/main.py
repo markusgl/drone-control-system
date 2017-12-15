@@ -78,12 +78,14 @@ class App:
 		ls = ftp.nlst()
 		count = len(ls)
 		curr = 0
+		images = []
 		for filename in ls:
 			curr += 1
 			print 'Processing file {} ... {} of {} ...'.format(filename, curr, count)
-			ftp.retrbinary("RETR " + filename, open(filename, 'wb').write)
+			#ftp.retrbinary("RETR " + filename, open(filename, 'wb').write)
+			images.append(filename)
 		ftp.quit()
-		#Stitcher.stitch_images(filename) #TODO - call stitcher
+		Stitcher.stitch_images(images) #TODO - call stitcher
 	
 	def initStream(self):
 		print("Initialize video stream")

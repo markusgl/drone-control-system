@@ -26,20 +26,11 @@ class App(object):
 		#self.delete_all_saved_files_on_drone()
 		self.bridge = CvBridge()
 		self.classifier = Classify("./models/Selbstgebastelt.hdf5")
-		#self.frame = Frame(self.root)
-		#self.frame.pack()
-		
-		self.win = Canvas(root, width=500, height=300, bd = 10, bg = 'white')
-		self.win.grid(row = 0, column = 0, columnspan = 2)
-		self.start_button = Button(width = 10, height = 2, text = 'Start Drone', command = self.init_drone)
-		self.start_button.grid(row = 1, column = 0)
-		self.home_button = Button(width = 10, height = 2, text = 'Return Home', command = self.start_homecoming)
-		self.home_button.grid(row = 1,column = 1)
-		
-		cv2.NamedWindow("Video Stream", 1)
-		
-		#self.start_button = Button(self.frame, text="Start Drone", command = self.initDrone)
-		#self.start_button.pack()
+		self.frame = Frame(self.root)
+		self.frame.pack()
+				
+		self.start_button = Button(self.frame, text="Start Drone", command = self.initDrone)
+		self.start_button.pack()
 		
 	def delete_all_saved_files_on_drone(self):
 		ftp = ftplib.FTP("192.168.42.1:21")
@@ -58,8 +49,8 @@ class App(object):
 		
 	def init_drone(self):
 		self.drone_control = DroneControl()
-		#self.home_button = Button(self.frame, text="Return Home", command = self.start_homecoming)
-		#self.home_button.pack()
+		self.home_button = Button(self.frame, text="Return Home", command = self.start_homecoming)
+		self.home_button.pack()
 		
 		self.handle_drone()
 		self.init_stream()
@@ -119,10 +110,9 @@ class App(object):
 		except CvBridgeError, e:
 			print(e)
 		
-		win.create_image(0,0, image=cv2_img)
-		"""cv2.startWindowThread()		
+		cv2.startWindowThread()		
 		cv2.imshow( "Video Stream", cv2_img)    # load frame into the OpenCV Window
-		cv2.waitKey(5)"""
+		cv2.waitKey(5)
 		
 		
 def main():

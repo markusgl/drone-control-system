@@ -28,6 +28,7 @@ class App(object):
 		self.classifier = Classify("./models/Selbstgebastelt.hdf5")
 		self.frame = Frame(self.root)
 		self.frame.pack()
+		self.rope_position = -1
 				
 		self.start_button = Button(self.frame, text="Start Drone", command = self.initDrone)
 		self.start_button.pack()
@@ -62,10 +63,10 @@ class App(object):
 		try:
 			#decode image
 			cv2_img = self.bridge.imgmsg_to_cv2(data, 'bgr8')
-			rope_position = self.classifier.classify_image(cv2_img)
+			self.rope_position = self.classifier.classify_image(cv2_img)
 			
-			print(rope_position)
-			self.drone_control.flyToNextPosition(rope_position)
+			print(self.rope_position)
+			self.drone_control.flyToNextPosition(self.rope_position)
 			
 			time.sleep(0.05)
 		except CvBridgeError, e:
@@ -103,14 +104,22 @@ class App(object):
 	def stream_video(self, stream_frame):
 		"""
 		displays the livestream on the GUI
-		"""	
+		"""
+		font = cv2.FONT_HERSHEY_SIMPLEX
+		bottomLeftText = (20, 300)
+		fontScale = 1
+		fontColor = (255, 255, 255)
+		lineType = 2
+
 		try:
 		#decode image
 			cv2_img = self.bridge.imgmsg_to_cv2(stream_frame, 'bgr8')
 		except CvBridgeError, e:
 			print(e)
 		
-		cv2.startWindowThread()		
+		cv2.startWindowThread()
+		cv2.putText(cv2_img, 'Klasse: ' + str(self.rope_position),
+					bottomLeftText, font, fontScale, fontColor, lineType)
 		cv2.imshow( "Video Stream", cv2_img)    # load frame into the OpenCV Window
 		cv2.waitKey(5)
 		

@@ -28,7 +28,6 @@ class App(object):
 		self.classifier = Classify("./models/Selbstgebastelt.hdf5")
 		self.frame = Frame(self.root)
 		self.frame.pack()
-		self.rope_position = -1
 				
 		self.start_button = Button(self.frame, text="Start Drone", command = self.initDrone)
 		self.start_button.pack()

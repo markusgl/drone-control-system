@@ -57,7 +57,6 @@ class Classify:
         """
         start_height = 0
 
-        # TODO - Positionen mit DroneControl vereinbaren
         for i in range(2):
             sliced_image_array = self.__slice(image_path, start_height)
             position = self.__predict(sliced_image_array)
@@ -69,7 +68,7 @@ class Classify:
         self.no_rope_counter += 1
         print("no_rope_counter: " + str(self.no_rope_counter))
         if self.no_rope_counter > 15:
-            return 6 #top
+            return 5 #top
         return position
 
     def __predict(self, img_array):
@@ -91,17 +90,6 @@ class Classify:
         return np.argmax(self.prediction_array)
 
 
-    # TODO - evlt in DroneControl anpassen und hier loeschen
-    def __argmax_to_dronepos(self, arg):
-        options = {0: 1,
-                   1: 2,
-                   2: 3,
-                   3: 4,
-                   4: 5,
-                   -1: 7
-                   }
-        return options.get(arg, "nothing")
-
 if __name__ == '__main__':
     #Objekterzeugung mit Kontruktoraufruf
     classifier = Classify('/Users/mgl/dev/tf_models/HD5/BinaryRopeDetection-06-0.00.hdf5')
@@ -121,5 +109,4 @@ if __name__ == '__main__':
     cv2.putText(img, 'Array: ' + str(classifier.prediction_array).replace('\n', ''), bottomLeftCornerOfText, font, 0.6, fontColor, 1)
     cv2.imshow('frame', img)
     cv2.waitKey(0)
-
 

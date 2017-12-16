@@ -65,13 +65,13 @@ class DroneControl(object):
 
 	"""
 	ropePosition is a number between 1 and 5:
-	1 -> rope is left
-	2 -> rope is little left
-	3 -> rope is center
-	4 -> rope is little right
-	5 -> rope is right
-	6 -> Top is reached
-	7 -> No rope detected
+	0 -> rope is left
+	1 -> rope is little left
+	2 -> rope is center
+	3 -> rope is little right
+	4 -> rope is right
+	5 -> Top is reached
+	-1 -> No rope detected
 	"""
 	def fly(self):
 		if self.steering_active:
@@ -83,40 +83,40 @@ class DroneControl(object):
 			twist_msg = Twist()
 			self.last_steering_command_z = 0.0
 			
-			if rope_position == 1:
+			if rope_position == 0:
 				twist_msg.linear.y = 0.75
 				self.last_steering_command_y = 0.75
 				self.last_direction = 1
-			elif rope_position == 2:
+			elif rope_position == 1:
 				twist_msg.linear.y = 0.25
 				self.last_steering_command_y = 0.25
 				self.last_direction = 2
-			elif rope_position == 3:
+			elif rope_position == 2:
 				self.last_direction = 3
-			elif rope_position == 4:
+			elif rope_position == 3:
 				twist_msg.linear.y = -0.25
 				self.last_steering_command_y = -0.25
 				self.last_direction = 4
-			elif rope_position == 5:
+			elif rope_position == 4:
 				twist_msg.linear.y = -0.75
 				self.last_steering_command_y = -0.75
 				self.last_direction = 5
-			elif rope_position == 6:
+			elif rope_position == 5:
 				self.top_reached = True
 				twist_msg.linear.y = 0.0
 				self.last_steering_command_y = 0.0
 				twist_msg.linear.z = 0
 				self.steering_active = False
-			elif rope_position == 7:
+			elif rope_position == -1:
 				twist_msg.linear.y = -1.0 * (self.last_steering_command_y)
 				self.last_steering_command_y = twist_msg.linear.y
 			
-			if not self.top_reached and rope_position != 7:
-				if rope_position == 3 and self.current_altitude - self.last_altitude >= self.snapshot_distance:
+			if not self.top_reached and rope_position != -1:
+				if rope_position == 2 and self.current_altitude - self.last_altitude >= self.snapshot_distance:
 					self.snapshot_pub.publish(self.empty_msg)	#if the rope is in the center and the drone is on the way up take a pic
 				twist_msg.linear.z = 0.5
 				self.last_steering_command_z = 0.5
-			elif rope_position != 7:
+			elif rope_position != -1:
 				twist_msg.linear.z = -0.5
 				self.last_steering_command_z = -0.5
 			else:

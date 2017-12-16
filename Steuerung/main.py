@@ -116,9 +116,12 @@ class App(object):
 		except CvBridgeError, e:
 			print(e)
 		
-		cv2.startWindowThread()		
+		img = Image.fromarray(cv2_img)
+		img_tk = ImageTk.PhotoImage(image=img)
+		win.create_image(50, 10, image=img_tk, anchor=NW)
+		"""cv2.startWindowThread()		
 		cv2.imshow( "Video Stream", cv2_img)    # load frame into the OpenCV Window
-		cv2.waitKey(5)
+		cv2.waitKey(5)"""
 		
 		
 def main():

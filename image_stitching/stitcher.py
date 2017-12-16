@@ -2,12 +2,13 @@ import imutils
 import cv2
 import numpy as np
 import os
-import threading
+#import threading
 
-class Stitcher(threading.Thread):
+#class Stitcher(threading.Thread):
+class Stitcher():
 
     def __init__(self, images):
-        threading.Thread.__init__(self)
+        #threading.Thread.__init__(self)
         # determine if we are using OpenCV v3.X
         self.isv3 = imutils.is_cv3()
         self.stitch_images(images)
@@ -156,7 +157,7 @@ if __name__ == '__main__':
             images.append(cv2.imread(os.path.join(root,file_name)))
             print(os.path.join(root,file_name))
 
-    thread = Stitcher(images)
-    thread.start()
+    #thread = Stitcher(images)
+    #thread.start()
 
     #stitched_img = newStitcher.stitch(images, showMatches = True) #this works well for two images

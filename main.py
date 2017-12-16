@@ -66,8 +66,12 @@ class App(object):
 			self.rope_position = self.classifier.classify_image(cv2_img)
 			
 			print(self.rope_position)
-			self.drone_control.flyToNextPosition(self.rope_position)
-			
+			if self.rope_position == 5: #top reached
+				self.start_homecoming()
+				self.stitch_image()
+			else:
+				self.drone_control.flyToNextPosition(self.rope_position)
+
 			time.sleep(0.05)
 		except CvBridgeError, e:
 			print(e)
@@ -95,7 +99,7 @@ class App(object):
 			#ftp.retrbinary("RETR " + filename, open(filename, 'wb').write)
 			images.append(filename)
 		ftp.quit()
-		Stitcher.stitch_images(images) #TODO - call stitcher
+		Stitcher.stitch_images(images) #TODO - call stitcher as thread
 	
 	def init_stream(self):
 		print("Initialize video stream")

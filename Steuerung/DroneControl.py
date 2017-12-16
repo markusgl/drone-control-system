@@ -89,21 +89,21 @@ class DroneControl(object):
 			if rope_position == 0:
 				twist_msg.linear.y = 0.75
 				self.last_steering_command_y = 0.75
-				self.last_direction = 1
+				self.last_direction = 0
 			elif rope_position == 1:
 				twist_msg.linear.y = 0.25
 				self.last_steering_command_y = 0.25
-				self.last_direction = 2
+				self.last_direction = 1
 			elif rope_position == 2:
-				self.last_direction = 3
+				self.last_direction = 2
 			elif rope_position == 3:
 				twist_msg.linear.y = -0.25
 				self.last_steering_command_y = -0.25
-				self.last_direction = 4
+				self.last_direction = 3
 			elif rope_position == 4:
 				twist_msg.linear.y = -0.75
 				self.last_steering_command_y = -0.75
-				self.last_direction = 5
+				self.last_direction = 4
 			elif rope_position == 5:
 				self.top_reached = True
 				twist_msg.linear.y = 0.0

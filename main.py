@@ -119,8 +119,8 @@ def main():
 	rospy.init_node('rope_recognition', anonymous=True)
 	root = Tk()
 	root.title("Super Drone Application")
-	root.geometry("500x360")
-	root.configure(background = "white")
+	root.geometry("50x50")
+	root.configure(background = "grey")
 	app = App(root)
 	root.mainloop()
 

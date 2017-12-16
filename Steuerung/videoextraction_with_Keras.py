@@ -1,29 +1,29 @@
 import numpy as np
 import cv2
 
-from ClassifyImages_with_Keras import Classify
+from Steuerung.classify_images import Classify
 
 class Videoextractor:
     def __init__(self):
-        self.classifier = Classify('Trained99-0.01.hdf5')
-        #self.classifier = Classify('BinaryRopeDetection-06-0.00.hdf5')
+        #self.classifier = Classify('Trained99-0.01.hdf5')
+        self.classifier = Classify('/Users/mgl/dev/tf_models/HD5/BinaryRopeDetection-06-0.00.hdf5')
 
-    def __direction_to_number(self, arg):
-        options = {1: "links",
-                   2: "halblinks",
-                   3: "mitte",
-                   4: "halbrechts",
-                   5: "rechts",
-                   6: "top",
-                   7: "kein Seil",
+    def __argmax_to_direction(self, arg):
+        options = {0: "links",
+                   1: "halblinks",
+                   2: "mitte",
+                   3: "halbrechts",
+                   4: "rechts",
+                   -1: "kein Seil"
                    }
         return options.get(arg, "nothing")
 
     def createVideo(self):
-        cap = cv2.VideoCapture('output2.mpg')
+        cap = cv2.VideoCapture('/Users/mgl/IT-Projekt/IT-Projekt_vids/output2.mpg')
 
         font = cv2.FONT_HERSHEY_SIMPLEX
-        bottomLeftCornerOfText = (20,400)
+        middleLeftText = (20,280)
+        bottomLeftCornerOfText = (20,310)
         fontScale = 1
         fontColor = (255,255,255)
         lineType = 2
@@ -32,9 +32,19 @@ class Videoextractor:
             ret, frame = cap.read()
 
             cv2.imwrite('bild.jpg',frame)
+            frame = cv2.resize(frame, (0,0), fx=0.75,fy=0.75)
             #classification_text = self.direction_to_number(self.classifier.classifyAImage('bild.jpg'))
-            pos=self.classifier.classifyAImage(frame)
-            cv2.putText(frame, 'Klasse: ' + str(self.__direction_to_number(pos)), bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
+            #pos=self.classifier.classifyAImage(frame)
+            pos = self.classifier.classify_image(frame)
+            print(pos)
+            if pos == 6:
+                print("Top reached")
+                break
+            cv2.putText(frame, 'Klasse: ' + str(self.__argmax_to_direction(pos)), middleLeftText, font, fontScale, fontColor, lineType)
+            np.set_printoptions(precision=2, suppress=True)
+            cv2.putText(frame, 'Array: ' + str(self.classifier.prediction_array).replace('\n', ''), bottomLeftCornerOfText, font, 0.6, fontColor, 1)
+            cv2.putText(frame, 'No rope counter: ' + str(self.classifier.no_rope_counter).replace('\n', ''), (20,335), font, 0.6, fontColor, 1)
+            #print("Received position from classifer: " + str(pos))
             cv2.imshow('frame', frame)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):

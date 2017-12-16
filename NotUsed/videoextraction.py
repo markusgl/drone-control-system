@@ -35,7 +35,7 @@ class Videoextractor:
             ret, frame = cap.read()
 
             cv2.imwrite('bild.jpg',frame)
-            classification_text = self.direction_to_number(self.classifier.classifyAImage('bild.jpg'))
+            classification_text = self.direction_to_number(self.classifier.classify_image('bild.jpg'))
 
             cv2.putText(frame, 'Klasse: ' + classification_text, bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
             cv2.imshow('frame', frame)

@@ -2,13 +2,30 @@ import imutils
 import cv2
 import numpy as np
 import os
+import threading
 
-class NewStitcher:
-    def __init__(self):
+class Stitcher(threading.Thread):
+
+    def __init__(self, images):
+        threading.Thread.__init__(self)
         # determine if we are using OpenCV v3.X
         self.isv3 = imutils.is_cv3()
+        self.stitch_images(images)
 
-    def stitch(self, images, ratio=0.75, reprojThresh=4.0):
+    def stitch_images(self, images):
+        # bottom to top order
+        stitched_img = images[1]
+        if stitched_img is not None:
+            print("Start stitching images - this may take some time...")
+            for x in range(1, len(images)):
+                stitched_img = self.__stitch([stitched_img, images[x]])
+
+            cv2.imshow("Route", imutils.resize(stitched_img, width=600))
+            cv2.waitKey(0)
+        else:
+            print("No images loaded.")
+
+    def __stitch(self, images, ratio=0.75, reprojThresh=4.0):
         (kpsA, featuresA) = self._detectAndDescribe(images[0])
         (kpsB, featuresB) = self._detectAndDescribe(images[1])
         M = self._matchKeypoints(kpsA, kpsB, featuresA, featuresB, ratio, reprojThresh)
@@ -107,6 +124,9 @@ class NewStitcher:
 
     #TODO delete for production environment - only necessary for testing purposes
     def _drawMatches(self, imageA, imageB, kpsA, kpsB, matches, status):
+        """
+        draws keypoint_matches in result
+        """
         # initialize the output visualization image
         (hA, wA) = imageA.shape[:2]
         (hB, wB) = imageB.shape[:2]
@@ -128,22 +148,15 @@ class NewStitcher:
         return vis
 
 if __name__ == '__main__':
-    newStitcher = NewStitcher()
-    images = [] # bottom to top order
 
-    path = "/Users/mgl/tools/IT-Projekt_vids/frames"
+    images = [] # bottom to top order
+    path = "/Users/mgl/IT-Projekt/IT-Projekt_vids/frames"
     for root, dirs, file_names in os.walk(path, topdown=False):
         for file_name in file_names:
             images.append(cv2.imread(os.path.join(root,file_name)))
             print(os.path.join(root,file_name))
 
+    thread = Stitcher(images)
+    thread.start()
+
     #stitched_img = newStitcher.stitch(images, showMatches = True) #this works well for two images
-
-    stitched_img = images[0]
-    print("Start stitching images - this may take some time...")
-    for x in range(1, len(images)):
-        stitched_img = newStitcher.stitch([stitched_img, images[x]])
-
-    cv2.imshow("Result", imutils.resize(stitched_img, width=600)) # TODO - delete for production envirnoment
-    cv2.imwrite("/Users/mgl/tools/IT-Projekt_vids/result/result_test1.jpg", imutils.resize(stitched_img, width=600))
-    cv2.waitKey(0)

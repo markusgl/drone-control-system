@@ -5,11 +5,12 @@ import cv2
 import time
 import ftplib
 
-from ClassifiyImages import Classify
+from Steuerung.classify_images import Classify
 from sensor_msgs.msg import Image as rosimg
 from cv_bridge import CvBridge, CvBridgeError
 from DroneControl import DroneControl
 from Tkinter import *
+from image_stitching.stitcher import Stitcher
 	
 class App(object):	
 	"""
@@ -90,11 +91,14 @@ class App(object):
 		ls = ftp.nlst()
 		count = len(ls)
 		curr = 0
+		images = []
 		for filename in ls:
 			curr += 1
 			print 'Processing file {} ... {} of {} ...'.format(filename, curr, count)
-			ftp.retrbinary("RETR " + filename, open(filename, 'wb').write)
+			#ftp.retrbinary("RETR " + filename, open(filename, 'wb').write)
+			images.append(filename)
 		ftp.quit()
+		Stitcher.stitch_images(images) #TODO - call stitcher
 	
 	def init_stream(self):
 		print("Initialize video stream")

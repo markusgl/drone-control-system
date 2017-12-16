@@ -2,7 +2,7 @@ import math
 
 import cv2
 
-from image_stitching.stitchit_old import ImageStitcher
+from NotUsed.stitchit_old import ImageStitcher
 
 
 def stitch_wall_images():

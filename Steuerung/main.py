@@ -61,8 +61,10 @@ class App(object):
 		self.handle_drone()
 		self.init_stream()
 		
-	#takes a frame, sends it to the classifier and calls the next steering command
 	def forward_image(self, data):
+		"""
+		takes a frame, sends it to the classifier and calls the next steering command
+		"""
 		try:
 			#decode image
 			cv2_img = self.bridge.imgmsg_to_cv2(data, 'bgr8')
@@ -104,8 +106,10 @@ class App(object):
 		print("Initialize video stream")
 		rospy.Subscriber("/bebop/image_raw", rosimg, self.stream_video)
 		
-	#displays the livestream on the GUI
-	def stream_video(self, streamFrame):	
+	def stream_video(self, streamFrame):
+		"""
+		displays the livestream on the GUI
+		"""	
 		try:
 		#decode image
 			cv2_img = self.bridge.imgmsg_to_cv2(streamFrame, 'bgr8')

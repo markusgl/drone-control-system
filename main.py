@@ -4,6 +4,7 @@ import rospy
 import cv2
 import time
 import ftplib
+import ImageTk
 
 from Steuerung.classify_images import Classify
 from sensor_msgs.msg import Image as rosimg

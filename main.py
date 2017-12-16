@@ -63,8 +63,8 @@ class App(object):
 		try:
 			#decode image
 			cv2_img = self.bridge.imgmsg_to_cv2(data, 'bgr8')
-			cv2_img = cv2.resize(cv2_img, (0, 0), fx=0.75, fy=0.75)
-			self.rope_position = self.classifier.classify_image(cv2_img)
+			frame = cv2.resize(cv2_img, (0, 0), fx=0.75, fy=0.75)
+			self.rope_position = self.classifier.classify_image(frame)
 			
 			print(self.rope_position)
 			if self.rope_position == 5: #top reached

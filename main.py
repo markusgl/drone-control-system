@@ -36,6 +36,8 @@ class App(object):
 		self.home_button = Button(width = 10, height = 2, text = 'Return Home', command = self.start_homecoming)
 		self.home_button.grid(row = 1,column = 1)
 		
+		cv2.NamedWindow("Video Stream", 1)
+		
 		#self.start_button = Button(self.frame, text="Start Drone", command = self.initDrone)
 		#self.start_button.pack()
 		
@@ -117,9 +119,7 @@ class App(object):
 		except CvBridgeError, e:
 			print(e)
 		
-		img = Image.fromarray(cv2_img)
-		img_tk = ImageTk.PhotoImage(image=img)
-		win.create_image(50, 10, image=img_tk, anchor=NW)
+		win.create_image(0,0, image=cv2_img)
 		"""cv2.startWindowThread()		
 		cv2.imshow( "Video Stream", cv2_img)    # load frame into the OpenCV Window
 		cv2.waitKey(5)"""
@@ -130,7 +130,7 @@ def main():
 	root = Tk()
 	root.title("Super Drone Application")
 	root.geometry("500x360")
-	root.configure(background = "grey")
+	root.configure(background = "white")
 	app = App(root)
 	root.mainloop()
 

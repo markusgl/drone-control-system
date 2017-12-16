@@ -68,7 +68,7 @@ class App(object):
 		try:
 			#decode image
 			cv2_img = self.bridge.imgmsg_to_cv2(data, 'bgr8')
-			rope_position = self.classifier.classifyAImage(cv2_img)
+			rope_position = self.classifier.classify_image(cv2_img)
 			
 			print(rope_position)
 			self.drone_control.flyToNextPosition(rope_position)
@@ -106,23 +106,23 @@ class App(object):
 		print("Initialize video stream")
 		rospy.Subscriber("/bebop/image_raw", rosimg, self.stream_video)
 		
-	def stream_video(self, streamFrame):
+	def stream_video(self, stream_frame):
 		"""
 		displays the livestream on the GUI
 		"""	
 		try:
 		#decode image
-			cv2_img = self.bridge.imgmsg_to_cv2(streamFrame, 'bgr8')
+			cv2_img = self.bridge.imgmsg_to_cv2(stream_frame, 'bgr8')
 		except CvBridgeError, e:
 			print(e)
 		
 		cv2.startWindowThread()		
-		cv2.imshow( "Video Stream", cv2Img)    # load frame into the OpenCV Window
+		cv2.imshow( "Video Stream", cv2_img)    # load frame into the OpenCV Window
 		cv2.waitKey(5)
 		
 		
 def main():
-	rospy.init_node('ropeRecognition', anonymous=True)
+	rospy.init_node('rope_recognition', anonymous=True)
 	root = Tk()
 	root.title("Super Drone Application")
 	root.geometry("500x360")

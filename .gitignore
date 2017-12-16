@@ -18,3 +18,7 @@ target
 __pycache__/
 *.py[cod]
 *.jpg
+#videos
+*.mpg
+#models
+*.hdf5

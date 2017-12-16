@@ -143,7 +143,7 @@ class DroneControl(object):
 
 	def land(self):
 		self.landing_initialized = True
-		while not self.isLanding:
+		while not self.is_landing:
 			self.landing_pub.publish(self.empty_msg)
 			time.sleep(1)
 			print("Probier mer halt amol zu landen!")

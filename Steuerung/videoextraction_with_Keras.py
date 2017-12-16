@@ -37,7 +37,7 @@ class Videoextractor:
             #pos=self.classifier.classifyAImage(frame)
             pos = self.classifier.classify_image(frame)
             print(pos)
-            if pos == 6:
+            if pos == 5:
                 print("Top reached")
                 break
             cv2.putText(frame, 'Klasse: ' + str(self.__argmax_to_direction(pos)), middleLeftText, font, fontScale, fontColor, lineType)

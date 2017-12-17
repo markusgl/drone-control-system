@@ -22,3 +22,4 @@ __pycache__/
 *.mpg
 #models
 *.hdf5
+*.zip

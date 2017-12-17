@@ -12,6 +12,8 @@ import cv2
 from keras.models import load_model
 import numpy as np
 import keras
+import tensorflow as tf
+
 
 
 class Classify:
@@ -21,6 +23,8 @@ class Classify:
         os.environ['TF_CPP_MIN_LOG_LEVEL']='2' # turn down log-level to suppress insignificant warning messages
         self.top_predictions=5
         self.model = self.__load_graph(graph_directory)
+        self.graph = tf.get_default_graph()
+        
         print('Init/Load Grapg, Start Session elapsed time (sec): %s' % (time.time() - start))
         self.no_rope_counter = 0
         self.prediction_array = []
@@ -55,21 +59,22 @@ class Classify:
         :return: 0 to 4: rope position left to right
                 -1: no rope found
         """
-        start_height = 0
+        with self.graph.as_default():
+			start_height = 0
 
-        for i in range(2):
-            sliced_image_array = self.__slice(image_path, start_height)
-            position = self.__predict(sliced_image_array)
-            if position > -1:
-                self.no_rope_counter = 0
-                return position
-            start_height = 64
+			for i in range(2):
+				sliced_image_array = self.__slice(image_path, start_height)
+				position = self.__predict(sliced_image_array)
+				if position > -1:
+					self.no_rope_counter = 0
+					return position
+				start_height = 64
 
-        self.no_rope_counter += 1
-        print("no_rope_counter: " + str(self.no_rope_counter))
-        if self.no_rope_counter > 15:
-            return 5 #top
-        return position
+			self.no_rope_counter += 1
+			print("no_rope_counter: " + str(self.no_rope_counter))
+			if self.no_rope_counter > 15:
+				return 5 #top
+			return position
 
     def __predict(self, img_array):
         """

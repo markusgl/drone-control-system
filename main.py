@@ -25,12 +25,12 @@ class App(object):
 		self.drone_control = None
 		#self.delete_all_saved_files_on_drone()
 		self.bridge = CvBridge()
-		self.classifier = Classify("./models/Selbstgebastelt.hdf5")
+		self.classifier = Classify("./models/FineTunedMobilNet-Keras-3.hdf5")
 		self.frame = Frame(self.root)
 		self.frame.pack()
 		self.rope_position = 0
 				
-		self.start_button = Button(self.frame, text="Start Drone", command = self.initDrone)
+		self.start_button = Button(self.frame, text="Start Drone", command = self.init_drone)
 		self.start_button.pack()
 		
 	def delete_all_saved_files_on_drone(self):
@@ -62,7 +62,7 @@ class App(object):
 		"""
 		try:
 			#decode image
-			cv2_img = self.bridge.imgmsg_to_cv2(data, 'bgr8')
+			cv2_img = self.bridge.imgmsg_to_cv2(data, "bgr8")
 			frame = cv2.resize(cv2_img, (0, 0), fx=0.75, fy=0.75)
 			self.rope_position = self.classifier.classify_image(frame)
 			

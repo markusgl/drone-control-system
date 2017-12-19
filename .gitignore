@@ -20,6 +20,8 @@ __pycache__/
 *.jpg
 #videos
 *.mpg
+*.avi
 #models
 *.hdf5
 *.zip
+

@@ -25,11 +25,12 @@ class App(object):
 		self.drone_control = None
 		#self.delete_all_saved_files_on_drone()
 		self.bridge = CvBridge()
-		self.classifier = Classify("./models/FineTunedMobilNet-Keras-3.hdf5")
+		self.classifier = Classify("./models/Selbstgebastelt.hdf5")
 		self.frame = Frame(self.root)
 		self.frame.pack()
 		self.rope_position = 0
-				
+		self.fourcc = cv2.VideoWriter_fourcc(*'XVID')
+		self.out = cv2.VideoWriter('output.avi', fourcc, 20.0, (856, 480))
 		self.start_button = Button(self.frame, text="Start Drone", command = self.init_drone)
 		self.start_button.pack()
 		
@@ -71,7 +72,7 @@ class App(object):
 				self.start_homecoming()
 				self.stitch_image()
 			else:
-				self.drone_control.flyToNextPosition(self.rope_position)
+				self.drone_control.fly_to_next_position(self.rope_position)
 
 			time.sleep(0.05)
 		except CvBridgeError, e:
@@ -126,6 +127,7 @@ class App(object):
 		cv2.putText(cv2_img, 'Klasse: ' + str(self.rope_position),
 					bottomLeftText, font, fontScale, fontColor, lineType)
 		cv2.imshow( "Video Stream", cv2_img)    # load frame into the OpenCV Window
+		self.out.write(cv2_img)
 		cv2.waitKey(5)
 		
 		

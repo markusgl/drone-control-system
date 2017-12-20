@@ -16,6 +16,7 @@ target
 *.sln.docstates
 .gitignore
 __pycache__/
+*.pyc
 *.py[cod]
 *.jpg
 #videos
@@ -24,4 +25,4 @@ __pycache__/
 #models
 *.hdf5
 *.zip
-
+*.png

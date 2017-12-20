@@ -85,6 +85,8 @@ class DroneControl(object):
 		if self.steering_active and not self.landing_initialized:
 			twist_msg = Twist()
 			self.last_steering_command_z = 0.0
+			twist_msg.linear.z = 0.0
+			twist_msg.linear.y = 0.0
 			
 			if rope_position == 0:
 				twist_msg.linear.y = 0.75
@@ -108,25 +110,19 @@ class DroneControl(object):
 				self.top_reached = True
 				twist_msg.linear.y = 0.0
 				self.last_steering_command_y = 0.0
-				twist_msg.linear.z = 0
+				twist_msg.linear.z = 0.0
 				self.steering_active = False
 			elif rope_position == -1:
 				twist_msg.linear.y = -1.0 * (self.last_steering_command_y)
 				self.last_steering_command_y = twist_msg.linear.y
 			
-			if not self.top_reached and rope_position != -1:
+			if not self.top_reached and rope_position == 2:
 				if rope_position == 2 and self.current_altitude - self.last_altitude >= self.snapshot_distance:
 					self.snapshot_pub.publish(self.empty_msg)	#if the rope is in the center and the drone is on the way up take a pic
 				twist_msg.linear.z = 0.5
 				self.last_steering_command_z = 0.5
-			elif rope_position != -1:
-				twist_msg.linear.z = -0.5
-				self.last_steering_command_z = -0.5
-			else:
-				twist_msg.linear.z = 0.0
 				
 			self.flying_pub.publish(twist_msg)	
-			print(twist_msg) #DEBUG
 		
 	def is_ready_to_fly(self, msg):
 		if msg.state == 1: self.hovering = False

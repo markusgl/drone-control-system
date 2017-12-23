@@ -30,7 +30,7 @@ class App(object):
         self.frame.pack()
         self.rope_position = 0
         self.fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        self.out = cv2.VideoWriter('output.avi', fourcc, 20.0, (856, 480))
+        self.out = cv2.VideoWriter('output.avi', self.fourcc, 20.0, (856, 480))
         self.start_button = Button(self.frame, text="Start Drone", command = self.init_drone)
         self.start_button.pack()
 

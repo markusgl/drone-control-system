@@ -2,16 +2,20 @@ import imutils
 import cv2
 import numpy as np
 import os
-#import threading
+import threading
 
-#class Stitcher(threading.Thread):
-class Stitcher():
+class Stitcher(threading.Thread):
 
     def __init__(self, images):
-        #threading.Thread.__init__(self)
+        threading.Thread.__init__(self)
         # determine if we are using OpenCV v3.X
         self.isv3 = imutils.is_cv3()
-        self.stitch_images(images)
+        self.images = images
+
+    def run(self):
+        result = self.stitch_images(self.images)
+        cv2.imshow("Result", imutils.resize(result, width=600))
+        cv2.waitKey(0)
 
     def stitch_images(self, images):
         # bottom to top order
@@ -19,12 +23,11 @@ class Stitcher():
         if stitched_img is not None:
             print("Start stitching images - this may take some time...")
             for x in range(1, len(images)):
-                stitched_img = self.__stitch([stitched_img, images[x]])
-
-            cv2.imshow("Route", imutils.resize(stitched_img, width=600))
-            cv2.waitKey(0)
+                stitched_img = self.__stitch([imutils.resize(stitched_img, width=800), imutils.resize(images[x], width=800)])
         else:
             print("No images loaded.")
+
+        return stitched_img
 
     def __stitch(self, images, ratio=0.75, reprojThresh=4.0):
         (kpsA, featuresA) = self._detectAndDescribe(images[0])
@@ -66,8 +69,6 @@ class Stitcher():
         #print("img1 shape 1: " + str(images[1].shape[1])) #width
         '''
 
-        #cv2.imshow("Result", cv2.resize(result, (800,600), interpolation = cv2.INTER_LINEAR))
-        #cv2.waitKey(0)
         return result
 
     def _matchKeypoints(self, kpsA, kpsB, featuresA, featuresB, ratio, reprojThresh):
@@ -151,13 +152,13 @@ class Stitcher():
 if __name__ == '__main__':
 
     images = [] # bottom to top order
-    path = "/Users/mgl/IT-Projekt/IT-Projekt_vids/frames"
+    path = "F:\\Videos_vong_Drohne\\frames\\test1"
     for root, dirs, file_names in os.walk(path, topdown=False):
         for file_name in file_names:
             images.append(cv2.imread(os.path.join(root,file_name)))
             print(os.path.join(root,file_name))
 
-    #thread = Stitcher(images)
-    #thread.start()
-
+    thread1 = Stitcher(images)
+    thread1.start()
+    print("Tue etwas anderes...")
     #stitched_img = newStitcher.stitch(images, showMatches = True) #this works well for two images

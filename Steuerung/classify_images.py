@@ -15,7 +15,6 @@ import keras
 import tensorflow as tf
 
 
-
 class Classify:
 
     def __init__(self, graph_directory):
@@ -24,7 +23,7 @@ class Classify:
         self.top_predictions=5
         self.model = self.__load_graph(graph_directory)
         self.graph = tf.get_default_graph()
-        
+        self.counter=0
         print('Init/Load Grapg, Start Session elapsed time (sec): %s' % (time.time() - start))
         self.no_rope_counter = 0
         self.prediction_array = []
@@ -60,21 +59,21 @@ class Classify:
                 -1: no rope found
         """
         with self.graph.as_default():
-			start_height = 0
+            start_height =0
 
-			for i in range(2):
-				sliced_image_array = self.__slice(image_path, start_height)
-				position = self.__predict(sliced_image_array)
-				if position > -1:
-					self.no_rope_counter = 0
-					return position
-				start_height = 64
+            for i in range(2):
+                sliced_image_array = self.__slice(image_path, start_height)
+                position = self.__predict(sliced_image_array)
+                if position > -1:
+                    self.no_rope_counter = 0
+                    return position
+                start_height = 64
 
-			self.no_rope_counter += 1
-			print("no_rope_counter: " + str(self.no_rope_counter))
-			if self.no_rope_counter > 15:
-				return 5 #top
-			return position
+            self.no_rope_counter += 1
+            print("no_rope_counter: " + str(self.no_rope_counter))
+            if self.no_rope_counter > 200:
+                return 5 #top
+            return position
 
     def __predict(self, img_array):
         """
@@ -84,7 +83,7 @@ class Classify:
         """
         images_as_tensor = np.reshape(np.asarray(img_array), [len(img_array), 128, 128, 3])
         self.prediction_array = self.model.predict(images_as_tensor, batch_size=len(img_array))
-
+        self.__save_cropped_images(img_array, self.prediction_array)
         #print(max(prediction_array))
 
         #norope threshold
@@ -93,6 +92,21 @@ class Classify:
             return -1
 
         return np.argmax(self.prediction_array)
+
+    def __save_cropped_images(self, img_array, prediction_array):
+
+        dir= 'D:\\tmp\\'
+        file = str(self.counter) + '.jpg'
+        for i, img in enumerate(img_array):
+            self.counter+=1
+            if prediction_array[i] >= 0.85:
+                subdir='rope'
+            else:
+                subdir='noRope'
+            img=np.reshape(img, [ 128, 128, 3])
+            path= os.path.join(dir,subdir,file)
+            cv2.imwrite(path,img)
+
 
 
 if __name__ == '__main__':

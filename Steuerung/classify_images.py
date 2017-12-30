@@ -27,6 +27,7 @@ class Classify:
         print('Init/Load Grapg, Start Session elapsed time (sec): %s' % (time.time() - start))
         self.no_rope_counter = 0
         self.prediction_array = []
+        self.prev_position = 2
 
     def __load_graph(self, filename):
         from keras.utils.generic_utils import CustomObjectScope
@@ -66,13 +67,16 @@ class Classify:
                 position = self.__predict(sliced_image_array)
                 if position > -1:
                     self.no_rope_counter = 0
+                    self.prev_position = position
                     return position
                 start_height = 64
 
             self.no_rope_counter += 1
             print("no_rope_counter: " + str(self.no_rope_counter))
             if self.no_rope_counter > 200:
-                return 5 #top
+                position = 5 #top
+                self.prev_position = position
+
             return position
 
     def __predict(self, img_array):
@@ -83,11 +87,14 @@ class Classify:
         """
         images_as_tensor = np.reshape(np.asarray(img_array), [len(img_array), 128, 128, 3])
         self.prediction_array = self.model.predict(images_as_tensor, batch_size=len(img_array))
-        self.__save_cropped_images(img_array, self.prediction_array)
-        #print(max(prediction_array))
+        #self.__save_cropped_images(img_array, self.prediction_array)
+        #print(self.prediction_array)
+        if self.prev_position == -1 or 5:
+            self.prev_position = 2
+        self.prediction_array[self.prev_position] *= 1.5
 
         #norope threshold
-        if max(self.prediction_array) < 0.5:  # TODO - Wert evtl. anpassen -> Praxis
+        if np.argmax(self.prediction_array) < 0.5:  # TODO - Wert evtl. anpassen -> Praxis
             #print("no rope found")
             return -1
 
@@ -111,7 +118,7 @@ class Classify:
 
 if __name__ == '__main__':
     #Objekterzeugung mit Kontruktoraufruf
-    classifier = Classify('/Users/mgl/dev/tf_models/HD5/BinaryRopeDetection-06-0.00.hdf5')
+    classifier = Classify('F:/IT-Projekt/tf_models/HD5/BinaryRopeDetection-06-0.00.hdf5')
     img = cv2.imread('bild.jpg')
     img = cv2.resize(img, (0, 0), fx=0.75, fy=0.75)
     pos = classifier.classify_image(img)

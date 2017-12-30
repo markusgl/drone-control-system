@@ -6,7 +6,7 @@ from classify_images import Classify
 class Videoextractor:
     def __init__(self):
         #self.classifier = Classify('Trained99-0.01.hdf5')
-        self.classifier = Classify('../models/Selbstgebastelt.hdf5')
+        self.classifier = Classify('/tf_models/HD5/BinaryRopeDetection-06-0.00.hdf5')
 
     def __argmax_to_direction(self, arg):
         options = {0: "links",
@@ -19,7 +19,7 @@ class Videoextractor:
         return options.get(arg, "nothing")
 
     def createVideo(self):
-        cap = cv2.VideoCapture('output2.mpg')
+        cap = cv2.VideoCapture('output3.avi')
 
         font = cv2.FONT_HERSHEY_SIMPLEX
         middleLeftText = (20,280)

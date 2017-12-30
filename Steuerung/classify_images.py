@@ -93,7 +93,7 @@ class Classify:
             self.prediction_array[self.prev_position] *= 1.5
 
         #norope threshold
-        if np.argmax(self.prediction_array) < 0.5:  # TODO - Wert evtl. anpassen -> Praxis
+        if max(self.prediction_array) < 0.5:  # TODO - Wert evtl. anpassen -> Praxis
             #print("no rope found")
             return -1
 

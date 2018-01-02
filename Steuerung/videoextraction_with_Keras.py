@@ -19,7 +19,7 @@ class Videoextractor:
         return options.get(arg, "nothing")
 
     def createVideo(self):
-        cap = cv2.VideoCapture('F:/IT-Projekt/Videos_vong_Drohne/Dachlwand_2017_12_29/output3.avi')
+        cap = cv2.VideoCapture('F:/IT-Projekt/Videos_vong_Drohne/output.mpg')
 
         font = cv2.FONT_HERSHEY_SIMPLEX
         middleLeftText = (20,280)

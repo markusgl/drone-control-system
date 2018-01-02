@@ -27,7 +27,7 @@ class Classify:
         print('Init/Load Grapg, Start Session elapsed time (sec): %s' % (time.time() - start))
         self.no_rope_counter = 0
         self.prediction_array = []
-        self.prev_position = -1
+        self.prev_positions = []
 
     def __load_graph(self, filename):
         from keras.utils.generic_utils import CustomObjectScope
@@ -67,7 +67,7 @@ class Classify:
                 position = self.__predict(sliced_image_array)
                 if position > -1:
                     self.no_rope_counter = 0
-                    self.prev_position = position
+                    #self.prev_position = position
                     return position
                 start_height = 64
 
@@ -75,7 +75,7 @@ class Classify:
             print("no_rope_counter: " + str(self.no_rope_counter))
             if self.no_rope_counter > 200:
                 position = 5 #top
-                self.prev_position = position
+                #self.prev_position = position
 
             return position
 
@@ -89,8 +89,11 @@ class Classify:
         self.prediction_array = self.model.predict(images_as_tensor, batch_size=len(img_array))
         #self.__save_cropped_images(img_array, self.prediction_array)
 
-        if self.prev_position != -1 or 5:
-            self.prediction_array[self.prev_position] *= 1.5
+        orig_prediction_array = self.prediction_array
+        for index in self.prev_positions:
+            self.prediction_array[index] *= 1.5
+
+        self.prev_positions = np.argwhere(orig_prediction_array == np.amax(orig_prediction_array))
 
         #norope threshold
         if max(self.prediction_array) < 0.5:  # TODO - Wert evtl. anpassen -> Praxis

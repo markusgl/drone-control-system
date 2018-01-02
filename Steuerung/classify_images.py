@@ -48,7 +48,9 @@ class Classify:
             start_width = end_width
             end_width = start_width+partWidth
 
-            cropped_images.append(np.reshape(crop_img, [1, 128, 128, 3]))
+            #Glaub das reshape hier is unnötig?!
+            #cropped_images.append(np.reshape(crop_img, [1, 128, 128, 3]))
+            cropped_images.append(crop_img)
         return cropped_images
 
     def classify_image(self, image_path):
@@ -60,7 +62,7 @@ class Classify:
                 -1: no rope found
         """
         with self.graph.as_default():
-            start_height =0
+            start_height =64
 
             for i in range(2):
                 sliced_image_array = self.__slice(image_path, start_height)
@@ -68,12 +70,13 @@ class Classify:
                 if position > -1:
                     self.no_rope_counter = 0
                     #self.prev_position = position
+                    cv2.imshow("rope", sliced_image_array[position])
                     return position
                 start_height = 64
 
             self.no_rope_counter += 1
             print("no_rope_counter: " + str(self.no_rope_counter))
-            if self.no_rope_counter > 200:
+            if self.no_rope_counter > 15:
                 position = 5 #top
                 #self.prev_position = position
 
@@ -93,10 +96,10 @@ class Classify:
         for index in self.prev_positions:
             self.prediction_array[index] *= 1.5
 
-        self.prev_positions = np.argwhere(orig_prediction_array == np.amax(orig_prediction_array))
+        self.prev_positions = np.argwhere(orig_prediction_array == np.amax(orig_prediction_array) )
 
         #norope threshold
-        if max(self.prediction_array) < 0.5:  # TODO - Wert evtl. anpassen -> Praxis
+        if max(self.prediction_array) < 0.9:  # TODO - Wert evtl. anpassen -> Praxis
             #print("no rope found")
             return -1
 
@@ -120,9 +123,9 @@ class Classify:
 
 if __name__ == '__main__':
     #Objekterzeugung mit Kontruktoraufruf
-    classifier = Classify('F:/IT-Projekt/tf_models/HD5/BinaryRopeDetection-06-0.00.hdf5')
+    classifier = Classify('..Models/BinaryRopeDetection-06-0.00.hdf5')
     img = cv2.imread('bild.jpg')
-    img = cv2.resize(img, (0, 0), fx=0.75, fy=0.75)
+    img = cv2.resize(img, (0, 0), fx=1, fy=1)
     pos = classifier.classify_image(img)
     font = cv2.FONT_HERSHEY_SIMPLEX
 

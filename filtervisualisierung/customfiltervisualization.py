@@ -8,17 +8,24 @@ import numpy as np
 import time
 from keras import backend as K
 from keras.models import load_model
+from keras.utils.generic_utils import CustomObjectScope
+from keras.applications import mobilenet
 
 # Zu setzende Parameter für das Netz
 eingabe_width = 128
 eingabe_height = 128
-name_der_schicht = 'conv2d_2'
+name_der_schicht = 'conv_dw_7'
 anzahl_filter_auf_schicht = 25 # kann auch kleiner als tatsächliche Anzahl sein
 anzahl_ausgabe_bilder = 5 # z.B. 5 = 5*5 Matrix Bilder
-anzahl_gradient_durchlauefe = 10 # kann ignoriert werden
+anzahl_gradient_durchlauefe = 20 # Eine Art Intensität
+
+K.set_learning_phase(0)
 
 # Laden des Models
-model = load_model('Selbstgestelt-E4-.hdf5')
+#model = load_model('Selbstgestelt-E4-.hdf5')
+with CustomObjectScope({'relu6': mobilenet.relu6, 'DepthwiseConv2D': mobilenet.DepthwiseConv2D}):
+    #model = load_model('RopePrediction-01-0.03.hdf5')
+	model = load_model('MobileNet-Loss_0.01_Batch_32_ACC_0.098_8EP.hdf5')
 
 # util function to convert a tensor into a valid image
 def deprocess_image(x):

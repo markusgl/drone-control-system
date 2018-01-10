@@ -23,9 +23,9 @@ class App(object):
         self.count = 0
         self.root = root
         self.drone_control = None
-        #self.delete_all_saved_files_on_drone()
+        self.delete_all_saved_files_on_drone()
         self.bridge = CvBridge()
-        self.classifier = Classify("./models/Selbstgebastelt.hdf5")
+        self.classifier = Classify("./models/Selbstgestelt-E4-.hdf5")
         self.frame = Frame(self.root)
         self.frame.pack()
         self.rope_position = 0
@@ -35,9 +35,9 @@ class App(object):
         self.start_button.pack()
 
     def delete_all_saved_files_on_drone(self):
-        ftp = ftplib.FTP("192.168.42.1:21")
+        ftp = ftplib.FTP('192.168.42.1')
         path = 'internal_000/Bebop_Drone/media'
-        ftp.login("anonymous", "")
+        ftp.login('anonymous', '')
         ftp.cwd(path)
         #ls of all files on drone internal media
         ls = ftp.nlst()
@@ -74,7 +74,7 @@ class App(object):
             else:
                 self.drone_control.fly_to_next_position(self.rope_position)
 
-            time.sleep(0.05)
+            time.sleep(0.1)
         except CvBridgeError, e:
             print(e)
 
@@ -87,9 +87,9 @@ class App(object):
 
     def stitch_image(self):
         #getting all images from internal media for stitching
-        ftp = ftplib.FTP("192.168.42.1:21")
-        path = 'internal_000/Bebop_Drone/media'
-        ftp.login("anonymous", "")
+        ftp = ftplib.FTP('192.168.42.1')
+        path = '/internal_000/Bebop_Drone/media'
+        ftp.login('anonymous', '')
         ftp.cwd(path)
         ls = ftp.nlst()
         count = len(ls)
@@ -99,8 +99,8 @@ class App(object):
             curr += 1
             print 'Processing file {} ... {} of {} ...'.format(filename, curr, count)
             #ftp.retrbinary("RETR " + filename, open(filename, 'wb').write)
-            if curr%30 == 0: #jeder 30te frame
-                images.append(filename)
+            #if curr%30 == 0: #jeder 30te frame
+            images.append(filename)
         ftp.quit()
         #Stitcher.stitch_images(images) #TODO - call stitcher as thread
         thread1 = Stitcher(images)
@@ -115,7 +115,8 @@ class App(object):
         displays the livestream on the GUI
         """
         font = cv2.FONT_HERSHEY_SIMPLEX
-        bottomLeftText = (20, 300)
+        bottomLeftText = (20, 420)
+        bottomLeftCornerOfText = (20, 440)
         fontScale = 1
         fontColor = (255, 255, 255)
         lineType = 2
@@ -127,8 +128,8 @@ class App(object):
             print(e)
 
         cv2.startWindowThread()
-        cv2.putText(cv2_img, 'Klasse: ' + str(self.rope_position),
-                    bottomLeftText, font, fontScale, fontColor, lineType)
+        cv2.putText(cv2_img, 'Array: ' + str(self.classifier.prediction_array).replace('\n', ''), bottomLeftCornerOfText, font, 0.6, fontColor, 1)
+        cv2.putText(cv2_img, 'Klasse: ' + str(self.rope_position), bottomLeftText, font, fontScale, fontColor, lineType)
         cv2.imshow( "Video Stream", cv2_img)    # load frame into the OpenCV Window
         self.out.write(cv2_img)
         cv2.waitKey(5)

@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import numpy as np
 import cv2
 import time
@@ -6,7 +9,7 @@ from classify_images import Classify
 class Videoextractor:
     def __init__(self):
         #self.classifier = Classify('Trained99-0.01.hdf5')
-        self.classifier = Classify('..\Models/RopePrediction-01-0.03.hdf5')
+        self.classifier = Classify('../models/Selbstgestelt-E4-.hdf5')
 
     def __argmax_to_direction(self, arg):
         options = {0: "links",
@@ -28,7 +31,7 @@ class Videoextractor:
         return frame
 
     def createVideo(self):
-        cap = cv2.VideoCapture('D:\Download/videos_drone_control2/output6.avi')
+        cap = cv2.VideoCapture('output8.avi')
 
         font = cv2.FONT_HERSHEY_SIMPLEX
         middleLeftText = (20,300)
@@ -61,7 +64,6 @@ class Videoextractor:
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-
         cap.release()
         cv2.destroyAllWindows()
 

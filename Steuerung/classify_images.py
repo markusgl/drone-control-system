@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Klasse zum Testen des Netzes, macht im Prinzip das gleiche wie Classify_and_output.
 Beispielhafte Verwendung am Ende des Skripts
@@ -62,7 +64,7 @@ class Classify:
                 -1: no rope found
         """
         with self.graph.as_default():
-            start_height =64
+            start_height = 0
 
             for i in range(2):
                 sliced_image_array = self.__slice(image_path, start_height)
@@ -70,7 +72,7 @@ class Classify:
                 if position > -1:
                     self.no_rope_counter = 0
                     #self.prev_position = position
-                    cv2.imshow("rope", sliced_image_array[position])
+                    #cv2.imshow("rope", sliced_image_array[position])
                     return position
                 start_height = 64
 
@@ -102,6 +104,7 @@ class Classify:
         if max(self.prediction_array) < 0.9:  # TODO - Wert evtl. anpassen -> Praxis
             #print("no rope found")
             return -1
+        print(self.prediction_array)
 
         return np.argmax(self.prediction_array)
 

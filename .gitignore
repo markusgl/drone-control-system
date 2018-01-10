@@ -22,7 +22,10 @@ __pycache__/
 #videos
 *.mpg
 *.avi
+*.mp4
 #models
 *.hdf5
 *.zip
 *.png
+#ros
+*.bag

@@ -112,6 +112,7 @@ class DroneControl(object):
 				self.last_steering_command_y = 0.0
 				twist_msg.linear.z = 0.0
 				self.steering_active = False
+				self.return_home()
 			elif rope_position == -1:
 				twist_msg.linear.y = -1.0 * (self.last_steering_command_y)
 				self.last_steering_command_y = twist_msg.linear.y
@@ -144,7 +145,7 @@ class DroneControl(object):
 		while not self.is_landing:
 			self.landing_pub.publish(self.empty_msg)
 			time.sleep(1)
-			print("Probier mer halt amol zu landen!")
+			print("Probiere zu landen!")
 		print("Land")
 	
 	def set_if_landing(self, msg):
@@ -153,7 +154,7 @@ class DroneControl(object):
 	def return_home(self):
 		"""
 		- lets the drone fly back to the start position
-		- called when "return home" button is clicked
+		- called when "return home" button is clicked or the top is reached
 		"""
 		self.land_after_homecoming_sub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/FlyingStateChanged",
 		 Ardrone3PilotingStateFlyingStateChanged, self.land_at_home)

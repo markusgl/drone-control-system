@@ -23,7 +23,6 @@ class App(object):
         self.count = 0
         self.root = root
         self.drone_control = None
-        #self.delete_all_saved_files_on_drone()
         self.bridge = CvBridge()
         self.classifier = Classify("./models/RopePrediction-20-0.07.hdf5")
         self.frame = Frame(self.root)
@@ -98,11 +97,8 @@ class App(object):
         for filename in ls:
             curr += 1
             print 'Processing file {} ... {} of {} ...'.format(filename, curr, count)
-            #ftp.retrbinary("RETR " + filename, open(filename, 'wb').write)
-            #if curr%30 == 0: #jeder 30te frame
             images.append(filename)
         ftp.quit()
-        #Stitcher.stitch_images(images) #TODO - call stitcher as thread
         thread1 = Stitcher(images)
         thread1.start()
 
@@ -129,7 +125,7 @@ class App(object):
 
         cv2.startWindowThread()
         cv2.putText(cv2_img, 'Array: ' + str(self.classifier.prediction_array).replace('\n', ''), bottomLeftCornerOfText, font, 0.6, fontColor, 1)
-        #cv2.putText(cv2_img, 'Klasse: ' + str(self.rope_position), bottomLeftText, font, fontScale, fontColor, lineType)
+        cv2.putText(cv2_img, 'Klasse: ' + str(self.rope_position), bottomLeftText, font, fontScale, fontColor, lineType)
         cv2.imshow( "Video Stream", cv2_img)    # load frame into the OpenCV Window
         self.out.write(cv2_img)
         cv2.waitKey(5)

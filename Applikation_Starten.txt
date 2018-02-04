@@ -5,9 +5,14 @@ Zum starten der Applikation:
 	$ ./install_bebop_driver.sh #installieren des Treibers
 
 2. Zum starten der Applikation:
-	$ chmod +x start.sh #Start-Skript ausführbar machen
-	$ ./start.sh #Starten des Treibers und der Applikation
-	--> Der Treiber wird als erstes gestartet und die Applikation 2 Sekunden (starten des Servers)
+	$ chmod +x bebop_driver.sh #Treiber-Skript ausführbar machen
+	$ chmod +x repup.sh #Republisher-Skript ausführbar machen
+	$ chmod +x application.sh #Eigentliches Applikations-Skript ausführbar machen
+	#Jeweils in einem eigenen Terminalfenster die Bash-Skripte starten:
+	$ ./bebop_driver.sh #Starten des Treibers
+	$ ./repup.sh #Starten des Republishers
+	$ ./application.sh #Starten der eigentlichen Applikation
+	Achtung: Der Treiber soll immer als erstes gestartet, der Republisher und die Applikation sollten ca. 30 Sekunden danach gestartet werden
 3. Button "Start Drone" klicken -> Drohne hebt ab und geht in Flugmodus
 4. Button "Return Home" erscheint, wenn Dohne gestartet ist. Mit diesem Button wird der Flug unterbrochen und die Drohne fliegt selbstständig zu ihrem Abflugort und landet
  

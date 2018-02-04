@@ -78,7 +78,7 @@ class Classify:
 
             self.no_rope_counter += 1
             print("no_rope_counter: " + str(self.no_rope_counter))
-            if self.no_rope_counter > 10:
+            if self.no_rope_counter > 5:
                 position = 5 #top
                 #self.prev_position = position
 

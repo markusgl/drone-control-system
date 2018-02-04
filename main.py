@@ -25,7 +25,7 @@ class App(object):
         self.drone_control = None
         #self.delete_all_saved_files_on_drone()
         self.bridge = CvBridge()
-        self.classifier = Classify("./models/RopePrediction-13-0.12.hdf5")
+        self.classifier = Classify("./models/RopePrediction-20-0.07.hdf5")
         self.frame = Frame(self.root)
         self.frame.pack()
         self.rope_position = 0
@@ -128,7 +128,7 @@ class App(object):
             print(e)
 
         cv2.startWindowThread()
-        #cv2.putText(cv2_img, 'Array: ' + str(self.classifier.prediction_array).replace('\n', ''), bottomLeftCornerOfText, font, 0.6, fontColor, 1)
+        cv2.putText(cv2_img, 'Array: ' + str(self.classifier.prediction_array).replace('\n', ''), bottomLeftCornerOfText, font, 0.6, fontColor, 1)
         #cv2.putText(cv2_img, 'Klasse: ' + str(self.rope_position), bottomLeftText, font, fontScale, fontColor, lineType)
         cv2.imshow( "Video Stream", cv2_img)    # load frame into the OpenCV Window
         self.out.write(cv2_img)

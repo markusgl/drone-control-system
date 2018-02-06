@@ -17,17 +17,34 @@ class Stitcher(threading.Thread):
         cv2.imshow("Result", imutils.resize(result, width=600))
         cv2.waitKey(0)
 
-    def stitch_images(self, images):
+    def stitch_images(self, video):
         # bottom to top order
-        stitched_img = images[1]
+        frames = self._video_extraction(video)
+        stitched_img = frames[1]
         if stitched_img is not None:
             print("Start stitching images - this may take some time...")
-            for x in range(1, len(images)):
+            for x in range(1, len(frames)):
                 stitched_img = self.__stitch([imutils.resize(stitched_img, width=800), imutils.resize(images[x], width=800)])
         else:
             print("No images loaded.")
 
         return stitched_img
+
+    def _video_extraction(self, video):
+        count = 0
+        cap = cv2.VideoCapture(video)
+        frames = []
+        while (cap.isOpened()):
+            ret, frame = cap.read()
+
+            count += 1
+            if count % 20 == 0:
+                rope_image = 'image' + str(count) + '.jpeg'
+                print("Received an image: " + rope_image)
+
+                frames.append(frame)
+
+        return frames
 
     def __stitch(self, images, ratio=0.75, reprojThresh=4.0):
         (kpsA, featuresA) = self._detectAndDescribe(images[0])

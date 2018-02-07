@@ -20,9 +20,6 @@ class DroneControl(object):
 	took_off = False
 	last_steering_command_y = 0.0
 	last_steering_command_z = 0.0
-	current_altitude = 0.0
-	last_altitude = 0.0
-	snapshot_distance = 1.0	#every x meters a snapshot is taken when the rope is in the center
 	last_direction = 3
 	landing_initialized = False
 	is_landing = False
@@ -37,8 +34,6 @@ class DroneControl(object):
 		self.landing_pub = rospy.Publisher("/bebop/land", Empty, queue_size = 10)							#Publisher for landing
 		self.ready_to_land_sub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/AltitudeChanged",
 		 Ardrone3PilotingStateAltitudeChanged, self.check_for_landing)										#Subscriber that checks is landing can be started
-		self.check_altitude_sub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/AltitudeChanged",
-		 Ardrone3PilotingStateAltitudeChanged, self.set_altitude)											#Subscriber that sets the current altitude value
 		self.landing_sub = rospy.Subscriber("/bebop/states/ardrone3/PilotingState/FlyingStateChanged",
 		 Ardrone3PilotingStateFlyingStateChanged, self.set_if_landing)										#Subscriber that checks if the drone is landing
 		self.homecoming_pub = rospy.Publisher("bebop/autoflight/navigate_home", Bool, queue_size = 10)		#Publisher for the return home mission
@@ -122,8 +117,6 @@ class DroneControl(object):
 				self.last_steering_command_y = twist_msg.linear.y
 			
 			if not self.top_reached and rope_position == 2:
-				if rope_position == 2 and self.current_altitude - self.last_altitude >= self.snapshot_distance:
-					self.snapshot_pub.publish(self.empty_msg)	#if the rope is in the center and the drone is on the way up take a pic
 				twist_msg.linear.z = 0.4
 				self.last_steering_command_z = 0.4
 				
@@ -139,10 +132,6 @@ class DroneControl(object):
 		if self.top_reached and msg.altitude <= 1.5:
 			self.land()
 			print("Init Landing Method")
-			
-	def set_altitude(self, msg):
-		self.last_altitude = self.current_altitude
-		self.current_altitude = msg.altitude
 
 	def land(self):
 		self.landing_initialized = True

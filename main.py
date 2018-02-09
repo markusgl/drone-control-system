@@ -5,6 +5,7 @@ import cv2
 import time
 import ftplib
 import ImageTk
+import os
 
 from Steuerung.classify_images import Classify
 from sensor_msgs.msg import Image as rosimg
@@ -23,6 +24,7 @@ class App(object):
         self.count = 0
         self.root = root
         self.drone_control = None
+        self.delete_all_saved_files_on_drone()
         self.bridge = CvBridge()
         self.classifier = Classify("./models/RopePrediction-20-0.07.hdf5")
         self.frame = Frame(self.root)
@@ -52,7 +54,6 @@ class App(object):
         self.drone_control = DroneControl()
         self.home_button = Button(self.frame, text="Return Home", command = self.start_homecoming)
         self.home_button.pack()
-
         self.handle_drone()
         self.init_stream()
 
@@ -91,15 +92,9 @@ class App(object):
         ftp.login('anonymous', '')
         ftp.cwd(path)
         ls = ftp.nlst()
-        count = len(ls)
-        curr = 0
-        images = []
-        for filename in ls:
-            curr += 1
-            print 'Processing file {} ... {} of {} ...'.format(filename, curr, count)
-            images.append(filename)
+        latest_video = max(ls, key=os.path.getctime)
         ftp.quit()
-        thread1 = Stitcher(images)
+        thread1 = Stitcher(latest_video)
         thread1.start()
 
     def init_stream(self):
